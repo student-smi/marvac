@@ -82,8 +82,8 @@ export const comboSlides: ComboSlide[] = [
       { icon: "clock", text: "DAILY USE ESSENTIALS" },
       { icon: "award", text: "TRUSTED BY PROFESSIONALS" }
     ],
-    bannerImage: "/images/combo_banner_999.jpg",
-    podiumImage: "/images/combo_podium_999.png"
+    bannerImage: "/images/complete_routine_podium.jpg",
+    podiumImage: "/images/complete_routine_podium.jpg"
   },
   {
     id: "combo-1999",
@@ -102,8 +102,8 @@ export const comboSlides: ComboSlide[] = [
       { icon: "clock", text: "DAILY USE ESSENTIALS" },
       { icon: "award", text: "TRUSTED BY PROFESSIONALS" }
     ],
-    bannerImage: "/images/combo_banner_1999.jpg",
-    podiumImage: "/images/combo_podium_1999.png"
+    bannerImage: "/images/kit_salon_master.jpg",
+    podiumImage: "/images/kit_salon_master.jpg"
   }
 ];
 
@@ -122,7 +122,7 @@ export const kitCards: KitCard[] = [
     name: "Sleek Bun Starter Kit",
     description: "Strong-hold spray + styling comb + pins + rubber bands",
     itemCount: 23,
-    image: "/images/kit_sleek_bun.jpg",
+    image: "/images/kit_daily_lift.jpg",
     avatarIcons: ["spray", "comb", "pins", "+19"]
   },
   {
@@ -130,7 +130,7 @@ export const kitCards: KitCard[] = [
     name: "Volume Starter Kit",
     description: "Hair mousse + back-combing brush + sectioning clips",
     itemCount: 6,
-    image: "/images/kit_volume.jpg",
+    image: "/images/kit_starter_pro.jpg",
     avatarIcons: ["mousse", "brush", "clips", "+2"]
   },
   {
@@ -138,7 +138,7 @@ export const kitCards: KitCard[] = [
     name: "Bridal Hairstylist Kit",
     description: "H+ spray + U-pins + bob pins + combs + lashes",
     itemCount: 27,
-    image: "/images/kit_bridal.jpg",
+    image: "/images/kit_bridal_suite.jpg",
     avatarIcons: ["spray", "pins", "lashes", "+23"]
   },
   {
@@ -146,7 +146,7 @@ export const kitCards: KitCard[] = [
     name: "Starter Kit",
     description: "Detangling brush + mousse + lightweight finishing product",
     itemCount: 3,
-    image: "/images/kit_starter.jpg",
+    image: "/images/kit_salon_master.jpg",
     avatarIcons: ["brush", "mousse", "spray"]
   }
 ];

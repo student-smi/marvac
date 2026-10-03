@@ -121,13 +121,41 @@ export default function CombosBanner() {
 
               {/* Right Product Composition Visual */}
               <div className="lg:col-span-5 relative h-[320px] sm:h-[400px] lg:h-[460px] flex items-center justify-center mt-6 lg:mt-0">
-                <Image
-                  src={slide.podiumImage || slide.bannerImage}
-                  alt={slide.title}
-                  fill
-                  className="object-contain drop-shadow-2xl"
-                  sizes="(max-width: 1024px) 100vw, 500px"
-                />
+                {(() => {
+                  const mediaSrc = slide.podiumImage || slide.bannerImage || "/images/complete_routine_podium.jpg";
+                  const isVid =
+                    mediaSrc.startsWith("data:video") ||
+                    mediaSrc.startsWith("blob:") ||
+                    /\.(mp4|webm|mov|ogg|m4v)(\?.*)?$/i.test(mediaSrc) ||
+                    mediaSrc.includes(".mp4") ||
+                    mediaSrc.includes(".webm");
+
+                  if (isVid) {
+                    return (
+                      <video
+                        src={mediaSrc}
+                        autoPlay
+                        loop
+                        muted
+                        playsInline
+                        controls={false}
+                        className="w-full h-full max-h-[460px] object-contain drop-shadow-2xl rounded-2xl"
+                      />
+                    );
+                  }
+
+                  return (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img
+                      src={mediaSrc}
+                      alt={slide.title}
+                      className="w-full h-full max-h-[460px] object-contain drop-shadow-2xl transition-transform duration-500 hover:scale-105"
+                      onError={(e) => {
+                        (e.currentTarget as HTMLImageElement).src = "/images/complete_routine_podium.jpg";
+                      }}
+                    />
+                  );
+                })()}
               </div>
             </motion.div>
           </AnimatePresence>

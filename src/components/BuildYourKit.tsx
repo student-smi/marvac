@@ -44,7 +44,7 @@ export default function BuildYourKit() {
           itemCountText: "5 Products",
           price: 1999,
           originalPrice: 2699,
-          image: "/images/hero_podium.png",
+          image: "/images/kit_salon_master.jpg",
           badge: "MOST POPULAR",
           subtitle: "H+ Super Hold Spray + texture powder + paddle brush + pins + clips",
         },
@@ -54,7 +54,7 @@ export default function BuildYourKit() {
           itemCountText: "7 Products",
           price: 2499,
           originalPrice: 3499,
-          image: "/images/kit_bridal.jpg",
+          image: "/images/kit_bridal_suite.jpg",
           badge: "SALON CHOICE",
           subtitle: "Complete bridal hair suite: shine mist, U-pins, carbon tail comb & padding",
         },
@@ -64,7 +64,7 @@ export default function BuildYourKit() {
           itemCountText: "3 Products",
           price: 1299,
           originalPrice: 1799,
-          image: "/images/kit_starter.jpg",
+          image: "/images/kit_starter_pro.jpg",
           badge: "DAILY USE",
           subtitle: "Detangling brush + lightweight styling mousse + core bobby pin box",
         },
@@ -74,7 +74,7 @@ export default function BuildYourKit() {
           itemCountText: "4 Products",
           price: 1599,
           originalPrice: 2199,
-          image: "/images/kit_sleek_bun.jpg",
+          image: "/images/kit_daily_lift.jpg",
           badge: "ESSENTIALS",
           subtitle: "Anti-frizz hair spray + fine tooth comb + silicone bands + donut bun",
         },
@@ -127,78 +127,87 @@ export default function BuildYourKit() {
 
         {/* 2-Column Mobile, 2-Column / 4-Column Desktop Cards Grid matching wireframe */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
-          {displayKits.map((kit) => (
-            <div
-              key={kit.id}
-              className="group bg-white rounded-3xl border border-[#E5E7EB] hover:border-[#2445A8]/30 p-5 shadow-xs hover:shadow-xl transition-all duration-300 flex flex-col justify-between"
-            >
-              <div>
-                {/* Kit Image */}
-                <div className="relative w-full aspect-[4/3] rounded-2xl overflow-hidden bg-gradient-to-b from-[#EAF3FF] to-white p-3 mb-4">
-                  {(kit.image || "").endsWith(".mp4") ||
-                  (kit.image || "").endsWith(".webm") ||
-                  (kit.image || "").startsWith("data:video") ? (
-                    <video
-                      src={kit.image}
-                      autoPlay
-                      loop
-                      muted
-                      playsInline
-                      controls={false}
-                      className="w-full h-full object-contain p-1"
-                    />
-                  ) : (
-                    <Image
-                      src={kit.image}
-                      alt={kit.name}
-                      fill
-                      className="object-contain p-2 group-hover:scale-105 transition-transform duration-500"
-                      sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw"
-                    />
-                  )}
-                  <span className="absolute top-2.5 right-2.5 bg-[#142B70] text-white text-[9px] font-black px-2.5 py-0.5 rounded-full uppercase tracking-wider">
-                    {kit.badge}
-                  </span>
+          {displayKits.map((kit) => {
+            const isVid =
+              (kit.image || "").startsWith("data:video") ||
+              (kit.image || "").startsWith("blob:") ||
+              /\.(mp4|webm|mov|ogg|m4v)(\?.*)?$/i.test(kit.image || "") ||
+              (kit.image || "").includes(".mp4") ||
+              (kit.image || "").includes(".webm");
+
+            return (
+              <div
+                key={kit.id}
+                className="group bg-white rounded-3xl border border-[#E5E7EB] hover:border-[#2445A8]/30 p-5 shadow-xs hover:shadow-xl transition-all duration-300 flex flex-col justify-between"
+              >
+                <div>
+                  {/* Kit Image */}
+                  <div className="relative w-full aspect-[4/3] rounded-2xl overflow-hidden bg-gradient-to-b from-[#EAF3FF] to-white p-3 mb-4 flex items-center justify-center">
+                    {isVid ? (
+                      <video
+                        src={kit.image}
+                        autoPlay
+                        loop
+                        muted
+                        playsInline
+                        controls={false}
+                        className="w-full h-full object-contain p-1"
+                      />
+                    ) : (
+                      // eslint-disable-next-line @next/next/no-img-element
+                      <img
+                        src={kit.image || "/images/kit_starter_pro.jpg"}
+                        alt={kit.name}
+                        className="w-full h-full object-contain p-2 group-hover:scale-105 transition-transform duration-500"
+                        onError={(e) => {
+                          (e.currentTarget as HTMLImageElement).src = "/images/kit_starter_pro.jpg";
+                        }}
+                      />
+                    )}
+                    <span className="absolute top-2.5 right-2.5 bg-[#142B70] text-white text-[9px] font-black px-2.5 py-0.5 rounded-full uppercase tracking-wider">
+                      {kit.badge}
+                    </span>
+                  </div>
+
+                  {/* Kit Name & Count */}
+                  <div className="flex items-center justify-between">
+                    <h3 className="text-base font-black text-[#111111] uppercase tracking-tight">
+                      {kit.name}
+                    </h3>
+                    <span className="text-xs font-bold text-[#2445A8]">
+                      {kit.itemCountText}
+                    </span>
+                  </div>
+
+                  {/* Description */}
+                  <p className="text-xs text-[#666666] font-normal mt-1 line-clamp-2 leading-relaxed">
+                    {kit.subtitle}
+                  </p>
+
+                  {/* Price */}
+                  <div className="flex items-baseline gap-2 mt-3.5">
+                    <span className="text-lg font-black text-[#111111]">
+                      ₹{kit.price.toLocaleString("en-IN")}
+                    </span>
+                    <span className="text-xs text-[#666666] line-through">
+                      ₹{kit.originalPrice.toLocaleString("en-IN")}
+                    </span>
+                  </div>
                 </div>
 
-                {/* Kit Name & Count */}
-                <div className="flex items-center justify-between">
-                  <h3 className="text-base font-black text-[#111111] uppercase tracking-tight">
-                    {kit.name}
-                  </h3>
-                  <span className="text-xs font-bold text-[#2445A8]">
-                    {kit.itemCountText}
-                  </span>
-                </div>
-
-                {/* Description */}
-                <p className="text-xs text-[#666666] font-normal mt-1 line-clamp-2 leading-relaxed">
-                  {kit.subtitle}
-                </p>
-
-                {/* Price */}
-                <div className="flex items-baseline gap-2 mt-3.5">
-                  <span className="text-lg font-black text-[#111111]">
-                    ₹{kit.price.toLocaleString("en-IN")}
-                  </span>
-                  <span className="text-xs text-[#666666] line-through">
-                    ₹{kit.originalPrice.toLocaleString("en-IN")}
-                  </span>
+                {/* [ SHOP KIT → ] CTA matching wireframe */}
+                <div className="pt-4 mt-3 border-t border-gray-100">
+                  <button
+                    onClick={() => handleOpenCustomizer(kit)}
+                    className="w-full py-3 rounded-xl bg-[#142B70] hover:bg-[#0d1e52] text-white text-xs font-black tracking-wider uppercase transition-all flex items-center justify-center gap-2 shadow-xs hover:shadow-md group"
+                  >
+                    <span>SHOP KIT</span>
+                    <ArrowRight className="w-3.5 h-3.5 transition-transform group-hover:translate-x-1" />
+                  </button>
                 </div>
               </div>
-
-              {/* [ SHOP KIT → ] CTA matching wireframe */}
-              <div className="pt-4 mt-3 border-t border-gray-100">
-                <button
-                  onClick={() => handleOpenCustomizer(kit)}
-                  className="w-full py-3 rounded-xl bg-[#142B70] hover:bg-[#0d1e52] text-white text-xs font-black tracking-wider uppercase transition-all flex items-center justify-center gap-2 shadow-xs hover:shadow-md group"
-                >
-                  <span>SHOP KIT</span>
-                  <ArrowRight className="w-3.5 h-3.5 transition-transform group-hover:translate-x-1" />
-                </button>
-              </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
       </div>
 

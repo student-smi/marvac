@@ -104,19 +104,33 @@ function ImageUploadField({
   onChange: (val: string) => void;
   aspectHint?: string;
 }) {
-  const [isUrlMode, setIsUrlMode] = useState(false);
+  const [mode, setMode] = useState<"file" | "url">(value?.startsWith("http") || value?.startsWith("/images") ? "url" : "file");
   const [isUploading, setIsUploading] = useState(false);
+  const [loadError, setLoadError] = useState(false);
   const fileInputRef = React.useRef<HTMLInputElement | null>(null);
+
+  // Reset load error when value changes
+  React.useEffect(() => {
+    setLoadError(false);
+  }, [value]);
 
   const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
     try {
       setIsUploading(true);
-      const dataUrl = await compressImageFile(file);
-      onChange(dataUrl);
+      if (file.type.startsWith("video/")) {
+        const reader = new FileReader();
+        reader.onload = (ev) => {
+          onChange(ev.target?.result as string);
+        };
+        reader.readAsDataURL(file);
+      } else {
+        const dataUrl = await compressImageFile(file);
+        onChange(dataUrl);
+      }
     } catch {
-      alert("Error reading image file");
+      alert("Error reading file");
     } finally {
       setIsUploading(false);
       if (fileInputRef.current) fileInputRef.current.value = "";
@@ -124,36 +138,63 @@ function ImageUploadField({
   };
 
   const inputId = `file-input-${label.toLowerCase().replace(/[^a-z0-9]/g, "-")}`;
+  const isVideo =
+    (value || "").startsWith("data:video") ||
+    (value || "").startsWith("blob:") ||
+    /\.(mp4|webm|mov|ogg|m4v)(\?.*)?$/i.test(value || "") ||
+    (value || "").includes(".mp4") ||
+    (value || "").includes(".webm") ||
+    (value || "").includes("/video/");
 
   return (
-    <div className="space-y-1.5">
+    <div className="space-y-2">
       <div className="flex items-center justify-between">
         <label className="block text-xs font-bold text-slate-700">
           {label} {aspectHint && <span className="text-[10px] text-slate-400 font-normal">({aspectHint})</span>}
         </label>
-        <button
-          type="button"
-          onClick={() => setIsUrlMode(!isUrlMode)}
-          className="text-[11px] text-blue-600 hover:text-blue-800 font-semibold underline"
-        >
-          {isUrlMode ? "Upload File from Device" : "or Paste Image URL"}
-        </button>
+
+        {/* Mode Selector Tabs */}
+        <div className="inline-flex rounded-lg border border-slate-200 p-0.5 bg-slate-100/70 text-[11px] font-semibold">
+          <button
+            type="button"
+            onClick={() => setMode("file")}
+            className={`px-2.5 py-1 rounded-md transition-all ${
+              mode === "file" ? "bg-white text-blue-700 shadow-2xs font-bold" : "text-slate-500 hover:text-slate-800"
+            }`}
+          >
+            Upload File
+          </button>
+          <button
+            type="button"
+            onClick={() => setMode("url")}
+            className={`px-2.5 py-1 rounded-md transition-all ${
+              mode === "url" ? "bg-white text-blue-700 shadow-2xs font-bold" : "text-slate-500 hover:text-slate-800"
+            }`}
+          >
+            Paste URL
+          </button>
+        </div>
       </div>
 
-      {isUrlMode ? (
-        <input
-          type="text"
-          placeholder="https://... or /images/..."
-          value={value}
-          onChange={(e) => onChange(e.target.value)}
-          className="w-full px-3.5 py-2 border rounded-xl text-xs sm:text-sm outline-none"
-        />
+      {mode === "url" ? (
+        <div className="space-y-1">
+          <input
+            type="text"
+            placeholder="Paste Image or Video URL (e.g. https://... or /images/...)"
+            value={value}
+            onChange={(e) => onChange(e.target.value.trim())}
+            className="w-full px-3.5 py-2.5 border border-slate-300 rounded-xl text-xs sm:text-sm outline-none focus:border-blue-600 focus:ring-1 focus:ring-blue-600 font-mono"
+          />
+          <p className="text-[10px] text-slate-400">
+            Accepts direct image links (.jpg, .png, .webp) and direct video links (.mp4, .webm).
+          </p>
+        </div>
       ) : (
         <div className="flex items-center gap-3">
           <input
             ref={fileInputRef}
             type="file"
-            accept="image/*"
+            accept="image/*,video/mp4,video/webm,video/quicktime"
             onChange={handleFileChange}
             className="hidden"
             id={inputId}
@@ -164,33 +205,61 @@ function ImageUploadField({
           >
             <div className="flex items-center justify-center gap-2 text-xs font-bold text-slate-700 group-hover:text-blue-600">
               <UploadCloud className="w-4 h-4 text-slate-400 group-hover:text-blue-500" />
-              <span>{isUploading ? "Processing & Compressing Image..." : "Choose Image from Device"}</span>
+              <span>{isUploading ? "Optimizing & Reading Media..." : "Choose Photo or Video from Computer / Phone"}</span>
             </div>
-            <p className="text-[10px] text-slate-400 mt-0.5">JPG, PNG, WEBP (Auto-optimized)</p>
+            <p className="text-[10px] text-slate-400 mt-0.5">JPG, PNG, WEBP, MP4 (Instant Preview & Auto-compressed)</p>
           </label>
         </div>
       )}
 
       {/* Live Preview if value exists */}
       {value && (
-        <div className="flex items-center gap-3 p-2 bg-slate-50 border border-slate-200 rounded-xl">
-          <div className="relative w-14 h-14 rounded-lg overflow-hidden border border-slate-200 bg-white shrink-0">
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src={value} alt="Preview" className="w-full h-full object-cover" />
+        <div className="flex items-center gap-3 p-2.5 bg-slate-50 border border-slate-200 rounded-xl">
+          <div className="relative w-16 h-16 rounded-lg overflow-hidden border border-slate-200 bg-slate-900 shrink-0 flex items-center justify-center">
+            {isVideo ? (
+              <video
+                src={value}
+                autoPlay
+                loop
+                muted
+                playsInline
+                className="w-full h-full object-cover"
+                onError={() => setLoadError(true)}
+              />
+            ) : (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img
+                src={value}
+                alt="Preview"
+                className="w-full h-full object-cover"
+                onError={() => setLoadError(true)}
+              />
+            )}
           </div>
-          <div className="flex-1 min-w-0">
-            <p className="text-xs font-bold text-slate-700 truncate">Image Selected</p>
-            <p className="text-[10px] text-slate-400 truncate">
-              {value.startsWith("data:") ? "Uploaded from device" : value}
+          <div className="flex-1 min-w-0 space-y-0.5">
+            <div className="flex items-center gap-2">
+              <span className={`text-[10px] font-black px-2 py-0.5 rounded-full uppercase tracking-wider ${
+                isVideo ? "bg-purple-100 text-purple-700" : "bg-blue-100 text-blue-700"
+              }`}>
+                {isVideo ? "🎬 Video (Auto-play)" : "🖼️ Image"}
+              </span>
+              {loadError && (
+                <span className="text-[10px] font-bold text-amber-600">
+                  ⚠️ Preview may not load
+                </span>
+              )}
+            </div>
+            <p className="text-[11px] text-slate-600 font-mono truncate max-w-full">
+              {value.startsWith("data:") ? "Device upload (Optimized Base64)" : value}
             </p>
           </div>
           <button
             type="button"
             onClick={() => onChange("")}
-            className="p-1.5 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
-            title="Remove Image"
+            className="p-2 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+            title="Remove Media"
           >
-            <Trash2 className="w-3.5 h-3.5" />
+            <Trash2 className="w-4 h-4" />
           </button>
         </div>
       )}
@@ -278,7 +347,7 @@ export default function AdminDashboardPage() {
     itemCount: "3",
     price: "1299",
     originalPrice: "1799",
-    image: "/images/kit_starter.jpg",
+    image: "/images/kit_starter_pro.jpg",
     badge: "MOST POPULAR",
     items: "Detangling Pro Brush, Hydra Mousse 180ml, Silk Hold Mist",
   });
@@ -729,7 +798,7 @@ export default function AdminDashboardPage() {
       itemCount: "3",
       price: "1299",
       originalPrice: "1799",
-      image: "/images/kit_starter.jpg",
+      image: "/images/kit_starter_pro.jpg",
       badge: "MOST POPULAR",
       items: "Detangling Pro Brush, Hydra Mousse 180ml, Silk Hold Mist",
     });
@@ -744,7 +813,7 @@ export default function AdminDashboardPage() {
       itemCount: String(kit.itemCount || (kit.items ? kit.items.length : 3)),
       price: String(kit.price || 1299),
       originalPrice: String(kit.originalPrice || 1799),
-      image: kit.image || "/images/kit_starter.jpg",
+      image: kit.image || "/images/kit_starter_pro.jpg",
       badge: kit.badge || "MOST POPULAR",
       items: Array.isArray(kit.items) ? kit.items.join(", ") : "",
     });
@@ -2022,8 +2091,24 @@ export default function AdminDashboardPage() {
                       <p className="text-xs text-slate-600 leading-relaxed line-clamp-3">{story.description}</p>
                     </div>
 
-                    <div className="relative h-48 rounded-xl overflow-hidden bg-gradient-to-tr from-[#EAF3FF] to-white border border-slate-200">
-                      <Image src={story.image} alt={story.title} fill className="object-contain p-4" />
+                    <div className="relative h-48 rounded-xl overflow-hidden bg-gradient-to-tr from-[#EAF3FF] to-white border border-slate-200 flex items-center justify-center">
+                      {(story.image || "").startsWith("data:video") ||
+                      (story.image || "").startsWith("blob:") ||
+                      /\.(mp4|webm|mov|ogg|m4v)(\?.*)?$/i.test(story.image || "") ||
+                      (story.image || "").includes(".mp4") ||
+                      (story.image || "").includes(".webm") ? (
+                        <video src={story.image} autoPlay loop muted playsInline className="w-full h-full object-contain p-2" />
+                      ) : (
+                        // eslint-disable-next-line @next/next/no-img-element
+                        <img
+                          src={story.image || "/images/hero_podium.png"}
+                          alt={story.title}
+                          className="w-full h-full object-contain p-4"
+                          onError={(e) => {
+                            (e.currentTarget as HTMLImageElement).src = "/images/hero_podium.png";
+                          }}
+                        />
+                      )}
                       <div className="absolute bottom-2 left-2 bg-white/95 rounded-lg px-2.5 py-1 border text-[11px] font-bold text-slate-800 shadow">
                         🛡️ {story.floatingBadgeTitle || "Clinical Bio-Tech Formula"}
                       </div>
@@ -2324,8 +2409,24 @@ export default function AdminDashboardPage() {
                       <p className="text-xs text-slate-600 line-clamp-2">{slide.description}</p>
                     </div>
 
-                    <div className="relative h-44 rounded-xl overflow-hidden bg-slate-100 border border-slate-200">
-                      <Image src={slide.image} alt={slide.title1} fill className="object-cover" />
+                    <div className="relative h-44 rounded-xl overflow-hidden bg-slate-100 border border-slate-200 flex items-center justify-center">
+                      {(slide.image || "").startsWith("data:video") ||
+                      (slide.image || "").startsWith("blob:") ||
+                      /\.(mp4|webm|mov|ogg|m4v)(\?.*)?$/i.test(slide.image || "") ||
+                      (slide.image || "").includes(".mp4") ||
+                      (slide.image || "").includes(".webm") ? (
+                        <video src={slide.image} autoPlay loop muted playsInline className="w-full h-full object-cover" />
+                      ) : (
+                        // eslint-disable-next-line @next/next/no-img-element
+                        <img
+                          src={slide.image || "/images/hero_podium.png"}
+                          alt={slide.title1}
+                          className="w-full h-full object-cover"
+                          onError={(e) => {
+                            (e.currentTarget as HTMLImageElement).src = "/images/hero_podium.png";
+                          }}
+                        />
+                      )}
                       <div className="absolute bottom-2 right-2 px-3 py-1 bg-black/70 backdrop-blur-md rounded-lg text-white font-black text-xs">
                         ₹{slide.price} <span className="line-through text-slate-400 text-[10px] ml-1">₹{slide.originalPrice}</span>
                       </div>
@@ -3015,9 +3116,24 @@ export default function AdminDashboardPage() {
                   className="bg-white rounded-2xl border border-slate-200/90 shadow-sm overflow-hidden flex flex-col justify-between hover:shadow-md transition-shadow"
                 >
                   <div>
-                    <div className="relative aspect-[4/3] bg-gradient-to-b from-sky-50 to-white p-3">
-                      {/* eslint-disable-next-line @next/next/no-img-element */}
-                      <img src={kit.image} alt={kit.name} className="w-full h-full object-contain" />
+                    <div className="relative aspect-[4/3] bg-gradient-to-b from-sky-50 to-white p-3 flex items-center justify-center">
+                      {(kit.image || "").startsWith("data:video") ||
+                      (kit.image || "").startsWith("blob:") ||
+                      /\.(mp4|webm|mov|ogg|m4v)(\?.*)?$/i.test(kit.image || "") ||
+                      (kit.image || "").includes(".mp4") ||
+                      (kit.image || "").includes(".webm") ? (
+                        <video src={kit.image} autoPlay loop muted playsInline className="w-full h-full object-contain" />
+                      ) : (
+                        // eslint-disable-next-line @next/next/no-img-element
+                        <img
+                          src={kit.image || "/images/kit_starter_pro.jpg"}
+                          alt={kit.name}
+                          className="w-full h-full object-contain"
+                          onError={(e) => {
+                            (e.currentTarget as HTMLImageElement).src = "/images/kit_starter_pro.jpg";
+                          }}
+                        />
+                      )}
                       <span className="absolute top-2.5 right-2.5 bg-[#142B70] text-white text-[9px] font-black px-2 py-0.5 rounded-full uppercase tracking-wider">
                         {kit.badge}
                       </span>
@@ -3101,9 +3217,24 @@ export default function AdminDashboardPage() {
                   className="bg-white rounded-2xl border border-slate-200/90 shadow-sm overflow-hidden flex flex-col justify-between hover:shadow-md transition-shadow"
                 >
                   <div>
-                    <div className="relative aspect-[16/9] bg-slate-100 overflow-hidden">
-                      {/* eslint-disable-next-line @next/next/no-img-element */}
-                      <img src={goal.image} alt={goal.name} className="w-full h-full object-cover" />
+                    <div className="relative aspect-[16/9] bg-slate-100 overflow-hidden flex items-center justify-center">
+                      {(goal.image || "").startsWith("data:video") ||
+                      (goal.image || "").startsWith("blob:") ||
+                      /\.(mp4|webm|mov|ogg|m4v)(\?.*)?$/i.test(goal.image || "") ||
+                      (goal.image || "").includes(".mp4") ||
+                      (goal.image || "").includes(".webm") ? (
+                        <video src={goal.image} autoPlay loop muted playsInline className="w-full h-full object-cover" />
+                      ) : (
+                        // eslint-disable-next-line @next/next/no-img-element
+                        <img
+                          src={goal.image || "/images/process_05_hspray.png"}
+                          alt={goal.name}
+                          className="w-full h-full object-cover"
+                          onError={(e) => {
+                            (e.currentTarget as HTMLImageElement).src = "/images/process_05_hspray.png";
+                          }}
+                        />
+                      )}
                       <div className="absolute top-2.5 right-2.5 bg-[#142B70] text-white text-[9px] font-black px-2.5 py-0.5 rounded-full uppercase tracking-wider shadow">
                         {goal.badge}
                       </div>

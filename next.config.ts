@@ -5,18 +5,15 @@ const nextConfig: NextConfig = {
     cpus: 2,
   },
   images: {
+    unoptimized: true,
     remotePatterns: [
       {
         protocol: "https",
-        hostname: "marvac.in",
+        hostname: "**",
       },
       {
-        protocol: "https",
-        hostname: "cdn.shopify.com",
-      },
-      {
-        protocol: "https",
-        hostname: "images.unsplash.com",
+        protocol: "http",
+        hostname: "**",
       },
     ],
   },
