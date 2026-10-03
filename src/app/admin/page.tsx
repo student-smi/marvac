@@ -1,0 +1,2622 @@
+"use client";
+
+import React, { useState, useEffect } from "react";
+import Link from "next/link";
+import Image from "next/image";
+import {
+  Package,
+  ShoppingCart,
+  IndianRupee,
+  Users,
+  Plus,
+  Trash2,
+  CheckCircle2,
+  Clock,
+  Truck,
+  XCircle,
+  ExternalLink,
+  Search,
+  Tag,
+  Database,
+  ArrowLeft,
+  RefreshCw,
+  Sparkles,
+  Layers,
+  Image as ImageIcon,
+  Megaphone,
+  MessageSquare,
+  HelpCircle,
+  Settings,
+  Star,
+  Check,
+  Edit,
+  Save,
+  Sliders,
+  Play,
+  Activity,
+  BookOpen,
+  Video,
+  Landmark,
+  RotateCcw,
+} from "lucide-react";
+import AuraLogo from "@/components/AuraLogo";
+import { Order, Coupon, HeroCampaign, AnnouncementItem, BrandSettings } from "@/lib/store";
+import { Product } from "@/data/products";
+import { Category } from "@/data/categories";
+import { Testimonial } from "@/data/testimonials";
+import { FAQItem } from "@/data/faqs";
+import { ProcessStep } from "@/data/process";
+import { StoryReel } from "@/data/stories";
+import { ExhibitionItem } from "@/data/exhibitions";
+import { ProductStoryItem } from "@/data/productStory";
+
+export default function AdminDashboardPage() {
+  const [activeTab, setActiveTab] = useState<
+    | "overview"
+    | "products"
+    | "hero"
+    | "announcements"
+    | "process"
+    | "productStories"
+    | "stories"
+    | "exhibitions"
+    | "categories"
+    | "testimonials"
+    | "faqs"
+    | "orders"
+    | "coupons"
+    | "settings"
+  >("overview");
+
+  // State
+  const [stats, setStats] = useState<any>({
+    totalRevenue: 0,
+    totalOrders: 0,
+    totalProducts: 0,
+    totalCustomers: 0,
+    totalCategories: 0,
+    recentOrders: [],
+  });
+
+  const [products, setProducts] = useState<Product[]>([]);
+  const [orders, setOrders] = useState<Order[]>([]);
+  const [coupons, setCoupons] = useState<Coupon[]>([]);
+  const [heroSlides, setHeroSlides] = useState<HeroCampaign[]>([]);
+  const [announcements, setAnnouncements] = useState<AnnouncementItem[]>([]);
+  const [categories, setCategories] = useState<Category[]>([]);
+  const [testimonials, setTestimonials] = useState<Testimonial[]>([]);
+  const [faqs, setFaqs] = useState<FAQItem[]>([]);
+  const [processSteps, setProcessSteps] = useState<ProcessStep[]>([]);
+  const [productStories, setProductStories] = useState<ProductStoryItem[]>([]);
+  const [storyReels, setStoryReels] = useState<StoryReel[]>([]);
+  const [exhibitions, setExhibitions] = useState<ExhibitionItem[]>([]);
+  const [brandSettings, setBrandSettings] = useState<BrandSettings>({
+    name: "AURA BEAUTY",
+    legalName: "Aura Beauty Laboratories Pvt Ltd",
+    tagline: "CLINICALLY PROVEN • DERMA TESTED • SALON GRADE",
+    description: "Luxury dermatologically formulated skincare and salon hair finishing essentials.",
+    currency: "₹",
+    freeShippingThreshold: 999,
+    supportEmail: "care@aurabeauty.in",
+    supportPhone: "+91 98765 43210",
+    whatsappNumber: "919876543210",
+    address: "Aura House, Level 4, Bandra Kurla Complex, Mumbai, Maharashtra 400051",
+  });
+
+  const [loading, setLoading] = useState(true);
+  const [actionSuccess, setActionSuccess] = useState("");
+  const [searchQuery, setSearchQuery] = useState("");
+
+  // Product Modal State
+  const [isAddProductOpen, setIsAddProductOpen] = useState(false);
+  const [newProduct, setNewProduct] = useState({
+    title: "",
+    price: "",
+    originalPrice: "",
+    category: "Skin & Hair",
+    image: "/images/hero_podium.png",
+    description: "",
+    badge: "NEW",
+    isBestseller: false,
+  });
+
+  // Hero Slide Modal State
+  const [isAddHeroOpen, setIsAddHeroOpen] = useState(false);
+  const [newHero, setNewHero] = useState({
+    eyebrow: "AURA EXCLUSIVE",
+    title1: "UNSHAKEABLE RADIANCE.",
+    title2: "CLINICAL PRECISION.",
+    description: "Formulated for all-day luminous hold and instant revitalizing nourishment.",
+    bullets: "Dermatologically tested, Zero white residue, 24h humidity lock",
+    price: "1299",
+    originalPrice: "1799",
+    image: "/images/hero_podium.png",
+    ctaText: "EXPLORE COLLECTION",
+    ctaLink: "/category/hair-styling-hold",
+  });
+
+  // Announcement Modal State
+  const [isAddAnnOpen, setIsAddAnnOpen] = useState(false);
+  const [newAnn, setNewAnn] = useState({
+    text: "FREE EXPRESS SHIPPING ON ORDERS ABOVE ₹999",
+    cta: "SHOP NOW →",
+    link: "/category/hair-styling-hold",
+  });
+
+  // Category Modal State
+  const [isAddCatOpen, setIsAddCatOpen] = useState(false);
+  const [newCat, setNewCat] = useState({
+    name: "",
+    itemCount: "12",
+    image: "/images/cat_products.png",
+    link: "",
+  });
+
+  // Process Step Modal State (OUR PROCESS)
+  const [isAddProcessOpen, setIsAddProcessOpen] = useState(false);
+  const [newProcess, setNewProcess] = useState({
+    step: "04",
+    title: "NOURISH & ILLUMINATE",
+    category: "REPAIR PHASE",
+    productName: "Aura Botanical Radiance Elixir 50ml",
+    tagline: "Cellular rejuvenation with non-greasy gloss.",
+    description: "Lightweight multi-peptide serum that reinforces cuticular tensile strength.",
+    benefits: "Deep lipid barrier repair, 3x glossy mirror shine, Heat defense up to 230°C",
+    howToUse: "Apply 2-3 drops into palms and work through mid-lengths to ends.",
+    result: "Instant high-gloss luster · Silky touch",
+    image: "/images/process_01_volumizer.png",
+    badge: "STEP 04 — REPAIR",
+  });
+
+  // Product Story Modal State (PRODUCT STORY)
+  const [isAddStoryOpen, setIsAddStoryOpen] = useState(false);
+  const [newProductStory, setNewProductStory] = useState({
+    badge: "CLINICAL BREAKTHROUGH",
+    title: "Engineered for 24-Hour Climate Defense.",
+    description: "Formulated to withstand up to 90% humidity while preserving supple brushable texture.",
+    benefits: "Resistant to intense Indian monsoon humidity, Zero white residue, Instant memory hold",
+    image: "/images/combo_podium_1999.png",
+    floatingBadgeTitle: "90% Humidity Tested",
+    floatingBadgeDesc: "Zero flaking under direct studio lights.",
+    ctaText: "LEARN MORE",
+    ctaLink: "/category/hair-styling-hold",
+  });
+
+  // Story Reel Modal State (SHOP THE STORIES)
+  const [isAddReelOpen, setIsAddReelOpen] = useState(false);
+  const [newReel, setNewReel] = useState({
+    title: "Editorial Glass Bun Tutorial",
+    tag: "Bridal Masterclass",
+    views: "2.4K views",
+    image: "/images/story_card_1.jpg",
+    productName: "Aura Pro Large Detangling Brush",
+    productPrice: "625",
+    productOriginalPrice: "695",
+    handle: "aura-hair-styling-student-kit",
+  });
+
+  // Exhibition Modal State (EXHIBITIONS)
+  const [isAddExOpen, setIsAddExOpen] = useState(false);
+  const [newEx, setNewEx] = useState({
+    title: "International Salon Expo 2026",
+    location: "Jio World Centre, Mumbai",
+    tag: "Grand Stage",
+    attendees: "15,000+ Visitors",
+    image: "/images/exhibition_1.jpg",
+  });
+
+  // Testimonial Modal State
+  const [isAddTestOpen, setIsAddTestOpen] = useState(false);
+  const [newTest, setNewTest] = useState({
+    name: "",
+    role: "Verified Stylist",
+    rating: "5",
+    review: "",
+    avatar: "/images/person_vaishnavi.png",
+    location: "Mumbai",
+  });
+
+  // FAQ Modal State
+  const [isAddFaqOpen, setIsAddFaqOpen] = useState(false);
+  const [newFaq, setNewFaq] = useState({
+    question: "",
+    answer: "",
+  });
+
+  // Coupon Modal State
+  const [isAddCouponOpen, setIsAddCouponOpen] = useState(false);
+  const [newCoupon, setNewCoupon] = useState({
+    code: "",
+    discountType: "percentage" as "percentage" | "flat",
+    discountValue: "10",
+    minOrderValue: "499",
+  });
+
+  const showNotification = (msg: string) => {
+    setActionSuccess(msg);
+    setTimeout(() => setActionSuccess(""), 4000);
+  };
+
+  const fetchAllAdminData = async () => {
+    setLoading(true);
+    try {
+      const [
+        statsRes,
+        prodRes,
+        ordRes,
+        cpnRes,
+        contentRes,
+        heroRes,
+        catRes,
+        testRes,
+        faqRes,
+        processRes,
+        prodStoryRes,
+        storiesRes,
+        exRes,
+      ] = await Promise.all([
+        fetch("/api/admin/stats").then((r) => r.json()),
+        fetch("/api/admin/products").then((r) => r.json()),
+        fetch("/api/admin/orders").then((r) => r.json()),
+        fetch("/api/admin/coupons").then((r) => r.json()),
+        fetch("/api/admin/content").then((r) => r.json()),
+        fetch("/api/admin/hero").then((r) => r.json()),
+        fetch("/api/admin/categories").then((r) => r.json()),
+        fetch("/api/admin/testimonials").then((r) => r.json()),
+        fetch("/api/admin/faqs").then((r) => r.json()),
+        fetch("/api/admin/process").then((r) => r.json()),
+        fetch("/api/admin/product-stories").then((r) => r.json()),
+        fetch("/api/admin/stories").then((r) => r.json()),
+        fetch("/api/admin/exhibitions").then((r) => r.json()),
+      ]);
+
+      if (statsRes.success) setStats(statsRes.stats);
+      if (prodRes.success) setProducts(prodRes.products);
+      if (ordRes.success) setOrders(ordRes.orders);
+      if (cpnRes.success) setCoupons(cpnRes.coupons);
+      if (contentRes.success && contentRes.data) {
+        setAnnouncements(contentRes.data.announcementItems || []);
+        if (contentRes.data.brandSettings) setBrandSettings(contentRes.data.brandSettings);
+      }
+      if (heroRes.success) setHeroSlides(heroRes.heroCampaigns);
+      if (catRes.success) setCategories(catRes.categories);
+      if (testRes.success) setTestimonials(testRes.testimonials);
+      if (faqRes.success) setFaqs(faqRes.faqs);
+      if (processRes.success) setProcessSteps(processRes.processSteps);
+      if (prodStoryRes.success) setProductStories(prodStoryRes.productStories);
+      if (storiesRes.success) setStoryReels(storiesRes.storyReels);
+      if (exRes.success) setExhibitions(exRes.exhibitions);
+    } catch (err) {
+      console.error("Failed to load admin data", err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchAllAdminData();
+  }, []);
+
+  // Handlers for Products
+  const handleCreateProduct = async (e: React.FormEvent) => {
+    e.preventDefault();
+    try {
+      const res = await fetch("/api/admin/products", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(newProduct),
+      });
+      const data = await res.json();
+      if (data.success) {
+        setIsAddProductOpen(false);
+        showNotification("Product added successfully!");
+        fetchAllAdminData();
+      }
+    } catch {
+      alert("Failed to add product");
+    }
+  };
+
+  const handleDeleteProduct = async (id: string) => {
+    if (!confirm("Delete product?")) return;
+    try {
+      const res = await fetch(`/api/admin/products?id=${id}`, { method: "DELETE" });
+      const data = await res.json();
+      if (data.success) {
+        showNotification("Product deleted successfully");
+        fetchAllAdminData();
+      }
+    } catch {
+      alert("Failed to delete product");
+    }
+  };
+
+  // Handlers for Process Steps
+  const handleCreateProcess = async (e: React.FormEvent) => {
+    e.preventDefault();
+    try {
+      const res = await fetch("/api/admin/process", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(newProcess),
+      });
+      const data = await res.json();
+      if (data.success) {
+        setIsAddProcessOpen(false);
+        showNotification("Process step added!");
+        fetchAllAdminData();
+      }
+    } catch {
+      alert("Failed to add process step");
+    }
+  };
+
+  const handleDeleteProcess = async (index: number) => {
+    if (!confirm("Delete this process step?")) return;
+    try {
+      const res = await fetch(`/api/admin/process?index=${index}`, { method: "DELETE" });
+      const data = await res.json();
+      if (data.success) {
+        showNotification("Process step deleted");
+        fetchAllAdminData();
+      }
+    } catch {
+      alert("Failed to delete process step");
+    }
+  };
+
+  // Handlers for Product Stories
+  const handleCreateProductStory = async (e: React.FormEvent) => {
+    e.preventDefault();
+    try {
+      const res = await fetch("/api/admin/product-stories", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(newProductStory),
+      });
+      const data = await res.json();
+      if (data.success) {
+        setIsAddStoryOpen(false);
+        showNotification("Product Story added!");
+        fetchAllAdminData();
+      }
+    } catch {
+      alert("Failed to add product story");
+    }
+  };
+
+  const handleDeleteProductStory = async (id: string) => {
+    if (!confirm("Delete this product story?")) return;
+    try {
+      const res = await fetch(`/api/admin/product-stories?id=${id}`, { method: "DELETE" });
+      const data = await res.json();
+      if (data.success) {
+        showNotification("Product story deleted");
+        fetchAllAdminData();
+      }
+    } catch {
+      alert("Failed to delete product story");
+    }
+  };
+
+  // Handlers for Story Reels
+  const handleCreateStoryReel = async (e: React.FormEvent) => {
+    e.preventDefault();
+    try {
+      const res = await fetch("/api/admin/stories", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(newReel),
+      });
+      const data = await res.json();
+      if (data.success) {
+        setIsAddReelOpen(false);
+        showNotification("Story Reel video added!");
+        fetchAllAdminData();
+      }
+    } catch {
+      alert("Failed to add story reel");
+    }
+  };
+
+  const handleDeleteStoryReel = async (id: string) => {
+    if (!confirm("Delete this story reel?")) return;
+    try {
+      const res = await fetch(`/api/admin/stories?id=${id}`, { method: "DELETE" });
+      const data = await res.json();
+      if (data.success) {
+        showNotification("Story reel deleted");
+        fetchAllAdminData();
+      }
+    } catch {
+      alert("Failed to delete story reel");
+    }
+  };
+
+  // Handlers for Exhibitions
+  const handleCreateExhibition = async (e: React.FormEvent) => {
+    e.preventDefault();
+    try {
+      const res = await fetch("/api/admin/exhibitions", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(newEx),
+      });
+      const data = await res.json();
+      if (data.success) {
+        setIsAddExOpen(false);
+        showNotification("Exhibition highlight added!");
+        fetchAllAdminData();
+      }
+    } catch {
+      alert("Failed to add exhibition");
+    }
+  };
+
+  const handleDeleteExhibition = async (id: string) => {
+    if (!confirm("Delete this exhibition?")) return;
+    try {
+      const res = await fetch(`/api/admin/exhibitions?id=${id}`, { method: "DELETE" });
+      const data = await res.json();
+      if (data.success) {
+        showNotification("Exhibition deleted");
+        fetchAllAdminData();
+      }
+    } catch {
+      alert("Failed to delete exhibition");
+    }
+  };
+
+  // Handlers for Hero Slides
+  const handleCreateHero = async (e: React.FormEvent) => {
+    e.preventDefault();
+    try {
+      const res = await fetch("/api/admin/hero", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(newHero),
+      });
+      const data = await res.json();
+      if (data.success) {
+        setIsAddHeroOpen(false);
+        showNotification("Hero Banner added!");
+        fetchAllAdminData();
+      }
+    } catch {
+      alert("Failed to add hero slide");
+    }
+  };
+
+  const handleDeleteHero = async (id: string) => {
+    if (!confirm("Delete this hero slide?")) return;
+    try {
+      const res = await fetch(`/api/admin/hero?id=${id}`, { method: "DELETE" });
+      const data = await res.json();
+      if (data.success) {
+        showNotification("Hero slide deleted");
+        fetchAllAdminData();
+      }
+    } catch {
+      alert("Failed to delete hero slide");
+    }
+  };
+
+  // Handlers for Announcements
+  const handleAddAnnouncement = async (e: React.FormEvent) => {
+    e.preventDefault();
+    try {
+      const res = await fetch("/api/admin/content", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ action: "addAnnouncementItem", newAnnouncementItem: newAnn }),
+      });
+      const data = await res.json();
+      if (data.success) {
+        setIsAddAnnOpen(false);
+        showNotification("Announcement notice added!");
+        fetchAllAdminData();
+      }
+    } catch {
+      alert("Failed to add announcement");
+    }
+  };
+
+  const handleDeleteAnnouncement = async (id: string) => {
+    try {
+      const res = await fetch("/api/admin/content", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ action: "deleteAnnouncementItem", deleteAnnouncementId: id }),
+      });
+      const data = await res.json();
+      if (data.success) {
+        showNotification("Announcement removed");
+        fetchAllAdminData();
+      }
+    } catch {
+      alert("Failed to delete announcement");
+    }
+  };
+
+  // Handlers for Categories
+  const handleCreateCategory = async (e: React.FormEvent) => {
+    e.preventDefault();
+    try {
+      const res = await fetch("/api/admin/categories", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(newCat),
+      });
+      const data = await res.json();
+      if (data.success) {
+        setIsAddCatOpen(false);
+        showNotification("Category created!");
+        fetchAllAdminData();
+      }
+    } catch {
+      alert("Failed to create category");
+    }
+  };
+
+  const handleDeleteCategory = async (id: string) => {
+    if (!confirm("Delete category?")) return;
+    try {
+      const res = await fetch(`/api/admin/categories?id=${id}`, { method: "DELETE" });
+      const data = await res.json();
+      if (data.success) {
+        showNotification("Category deleted");
+        fetchAllAdminData();
+      }
+    } catch {
+      alert("Failed to delete category");
+    }
+  };
+
+  // Handlers for Testimonials
+  const handleCreateTestimonial = async (e: React.FormEvent) => {
+    e.preventDefault();
+    try {
+      const res = await fetch("/api/admin/testimonials", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(newTest),
+      });
+      const data = await res.json();
+      if (data.success) {
+        setIsAddTestOpen(false);
+        showNotification("Review added!");
+        fetchAllAdminData();
+      }
+    } catch {
+      alert("Failed to add testimonial");
+    }
+  };
+
+  const handleDeleteTestimonial = async (id: string) => {
+    if (!confirm("Delete review?")) return;
+    try {
+      const res = await fetch(`/api/admin/testimonials?id=${id}`, { method: "DELETE" });
+      const data = await res.json();
+      if (data.success) {
+        showNotification("Review deleted");
+        fetchAllAdminData();
+      }
+    } catch {
+      alert("Failed to delete testimonial");
+    }
+  };
+
+  // Handlers for FAQs
+  const handleCreateFaq = async (e: React.FormEvent) => {
+    e.preventDefault();
+    try {
+      const res = await fetch("/api/admin/faqs", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(newFaq),
+      });
+      const data = await res.json();
+      if (data.success) {
+        setIsAddFaqOpen(false);
+        showNotification("FAQ added!");
+        fetchAllAdminData();
+      }
+    } catch {
+      alert("Failed to add FAQ");
+    }
+  };
+
+  const handleDeleteFaq = async (id: string) => {
+    if (!confirm("Delete FAQ?")) return;
+    try {
+      const res = await fetch(`/api/admin/faqs?id=${id}`, { method: "DELETE" });
+      const data = await res.json();
+      if (data.success) {
+        showNotification("FAQ deleted");
+        fetchAllAdminData();
+      }
+    } catch {
+      alert("Failed to delete FAQ");
+    }
+  };
+
+  // Order status
+  const handleUpdateOrderStatus = async (orderId: string, status: Order["order_status"]) => {
+    try {
+      const res = await fetch("/api/admin/orders", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ orderId, status }),
+      });
+      const data = await res.json();
+      if (data.success) {
+        showNotification(`Order status updated to ${status.toUpperCase()}`);
+        fetchAllAdminData();
+      }
+    } catch {
+      alert("Failed to update status");
+    }
+  };
+
+  // Coupons
+  const handleCreateCoupon = async (e: React.FormEvent) => {
+    e.preventDefault();
+    try {
+      const res = await fetch("/api/admin/coupons", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          code: newCoupon.code.toUpperCase(),
+          discountType: newCoupon.discountType,
+          discountValue: Number(newCoupon.discountValue),
+          minOrderValue: Number(newCoupon.minOrderValue),
+        }),
+      });
+      const data = await res.json();
+      if (data.success) {
+        setIsAddCouponOpen(false);
+        showNotification(`Coupon ${newCoupon.code.toUpperCase()} created!`);
+        fetchAllAdminData();
+      }
+    } catch {
+      alert("Failed to create coupon");
+    }
+  };
+
+  // Settings
+  const handleSaveBrandSettings = async (e: React.FormEvent) => {
+    e.preventDefault();
+    try {
+      const res = await fetch("/api/admin/content", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ action: "updateBrandSettings", brandSettings }),
+      });
+      const data = await res.json();
+      if (data.success) {
+        showNotification("Brand settings saved!");
+        fetchAllAdminData();
+      }
+    } catch {
+      alert("Failed to save brand settings");
+    }
+  };
+
+  const handleResetData = async (mode: "seed" | "wipe") => {
+    const confirmMsg =
+      mode === "wipe"
+        ? "⚠️ WARNING: Are you sure you want to CLEAR ALL store data? (Products, categories, coupons, orders will be wiped)"
+        : "⚡ Are you sure you want to reset all store sections to fresh Aura Beauty dummy data?";
+    if (!confirm(confirmMsg)) return;
+
+    setLoading(true);
+    try {
+      const res = await fetch("/api/admin/reset-data", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ mode }),
+      }).then((r) => r.json());
+
+      if (res.success) {
+        showNotification(res.message);
+        await fetchAllAdminData();
+      } else {
+        alert("Error: " + res.error);
+      }
+    } catch (err: any) {
+      alert("Failed to reset: " + err.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const filteredProducts = products.filter(
+    (p) =>
+      p.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      p.category.toLowerCase().includes(searchQuery.toLowerCase())
+  );
+
+  return (
+    <div className="min-h-screen bg-[#F8FAFC] text-[#0F172A] font-sans antialiased">
+      {/* Top Header */}
+      <header className="bg-white border-b border-[#E2E8F0] sticky top-0 z-40">
+        <div className="max-w-[1560px] mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+          <div className="flex items-center gap-4">
+            <Link href="/" className="flex items-center gap-2 hover:opacity-80 transition-opacity">
+              <AuraLogo className="h-7 w-auto" />
+            </Link>
+            <span className="hidden sm:inline-block px-2.5 py-1 text-[11px] font-bold tracking-wider uppercase bg-[#142B70] text-white rounded-md">
+              Complete Website CMS & Control Center
+            </span>
+          </div>
+
+          <div className="flex items-center gap-2.5">
+            <button
+              onClick={() => handleResetData("seed")}
+              disabled={loading}
+              className="px-3 py-1.5 bg-amber-500 hover:bg-amber-600 text-white rounded-lg text-xs font-bold flex items-center gap-1.5 shadow-sm transition-all"
+              title="Reset to fresh Aura Beauty dummy data"
+            >
+              <RotateCcw className="w-3.5 h-3.5" />
+              <span className="hidden sm:inline">⚡ Reset Aura Data</span>
+            </button>
+            <button
+              onClick={() => handleResetData("wipe")}
+              disabled={loading}
+              className="px-3 py-1.5 bg-rose-600 hover:bg-rose-700 text-white rounded-lg text-xs font-bold flex items-center gap-1.5 shadow-sm transition-all"
+              title="Wipe all store data clean"
+            >
+              <Trash2 className="w-3.5 h-3.5" />
+              <span className="hidden sm:inline">Wipe Clean</span>
+            </button>
+            <button
+              onClick={fetchAllAdminData}
+              disabled={loading}
+              className="p-2 text-slate-500 hover:text-slate-800 hover:bg-slate-100 rounded-lg transition-colors flex items-center gap-1.5 text-xs font-semibold"
+              title="Refresh Data"
+            >
+              <RefreshCw className={`w-4 h-4 ${loading ? "animate-spin text-blue-600" : ""}`} />
+              <span className="hidden sm:inline">Refresh</span>
+            </button>
+            <Link
+              href="/"
+              target="_blank"
+              className="px-3.5 py-1.5 border border-slate-300 text-slate-700 hover:bg-slate-50 rounded-lg text-xs font-semibold flex items-center gap-1.5 transition-colors"
+            >
+              <ExternalLink className="w-3.5 h-3.5" />
+              <span>View Live Store</span>
+            </Link>
+          </div>
+        </div>
+      </header>
+
+      {/* Success Notification Toast */}
+      {actionSuccess && (
+        <div className="fixed bottom-6 right-6 z-50 bg-[#0F172A] text-white px-5 py-3.5 rounded-xl shadow-2xl flex items-center gap-3 border border-slate-700 animate-in slide-in-from-bottom-5">
+          <CheckCircle2 className="w-5 h-5 text-emerald-400" />
+          <span className="text-sm font-medium">{actionSuccess}</span>
+        </div>
+      )}
+
+      {/* Main Container */}
+      <div className="max-w-[1560px] mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        {/* Navigation Tabs Bar */}
+        <div className="flex items-center gap-2 overflow-x-auto pb-4 mb-8 border-b border-slate-200 scrollbar-none">
+          {[
+            { id: "overview", label: "Overview", icon: Layers },
+            { id: "products", label: `Products (${products.length})`, icon: Package },
+            { id: "hero", label: `Hero Banners (${heroSlides.length})`, icon: ImageIcon },
+            { id: "announcements", label: `Announcements (${announcements.length})`, icon: Megaphone },
+            { id: "process", label: `Our Process (${processSteps.length})`, icon: Activity },
+            { id: "productStories", label: `Product Story (${productStories.length})`, icon: BookOpen },
+            { id: "stories", label: `Shop The Stories (${storyReels.length})`, icon: Video },
+            { id: "exhibitions", label: `Exhibitions (${exhibitions.length})`, icon: Landmark },
+            { id: "categories", label: `Categories (${categories.length})`, icon: Tag },
+            { id: "testimonials", label: `Reviews (${testimonials.length})`, icon: MessageSquare },
+            { id: "faqs", label: `FAQs (${faqs.length})`, icon: HelpCircle },
+            { id: "orders", label: `Orders (${orders.length})`, icon: ShoppingCart },
+            { id: "coupons", label: `Coupons (${coupons.length})`, icon: Sparkles },
+            { id: "settings", label: "Settings", icon: Settings },
+          ].map((tab) => {
+            const Icon = tab.icon;
+            const isActive = activeTab === tab.id;
+            return (
+              <button
+                key={tab.id}
+                onClick={() => setActiveTab(tab.id as any)}
+                className={`px-3.5 py-2.5 rounded-xl text-xs sm:text-sm font-bold flex items-center gap-1.5 whitespace-nowrap transition-all duration-200 ${
+                  isActive
+                    ? "bg-[#142B70] text-white shadow-md shadow-blue-900/10"
+                    : "text-slate-600 hover:text-slate-900 hover:bg-slate-200/60"
+                }`}
+              >
+                <Icon className={`w-4 h-4 ${isActive ? "text-sky-300" : "text-slate-400"}`} />
+                <span>{tab.label}</span>
+              </button>
+            );
+          })}
+        </div>
+
+        {/* TAB 1: OVERVIEW */}
+        {activeTab === "overview" && (
+          <div className="space-y-8 animate-in fade-in duration-300">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
+              <div className="bg-white p-6 rounded-2xl border border-slate-200/80 shadow-sm flex items-center justify-between">
+                <div>
+                  <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Total Sales</p>
+                  <p className="text-2xl sm:text-3xl font-black text-slate-900 mt-1">₹{stats.totalRevenue.toLocaleString("en-IN")}</p>
+                </div>
+                <div className="w-12 h-12 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center">
+                  <IndianRupee className="w-6 h-6" />
+                </div>
+              </div>
+
+              <div className="bg-white p-6 rounded-2xl border border-slate-200/80 shadow-sm flex items-center justify-between">
+                <div>
+                  <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Total Orders</p>
+                  <p className="text-2xl sm:text-3xl font-black text-slate-900 mt-1">{stats.totalOrders}</p>
+                </div>
+                <div className="w-12 h-12 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center">
+                  <ShoppingCart className="w-6 h-6" />
+                </div>
+              </div>
+
+              <div className="bg-white p-6 rounded-2xl border border-slate-200/80 shadow-sm flex items-center justify-between">
+                <div>
+                  <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Active Products</p>
+                  <p className="text-2xl sm:text-3xl font-black text-slate-900 mt-1">{stats.totalProducts}</p>
+                </div>
+                <div className="w-12 h-12 rounded-xl bg-purple-50 text-purple-600 flex items-center justify-center">
+                  <Package className="w-6 h-6" />
+                </div>
+              </div>
+
+              <div className="bg-white p-6 rounded-2xl border border-slate-200/80 shadow-sm flex items-center justify-between">
+                <div>
+                  <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Dynamic Sections</p>
+                  <p className="text-2xl sm:text-3xl font-black text-slate-900 mt-1">100% LIVE</p>
+                </div>
+                <div className="w-12 h-12 rounded-xl bg-amber-50 text-amber-600 flex items-center justify-center">
+                  <Activity className="w-6 h-6" />
+                </div>
+              </div>
+            </div>
+
+            {/* Quick Action Bar */}
+            <div className="bg-gradient-to-r from-[#142B70] to-[#1E3A8A] text-white p-6 rounded-2xl shadow-md">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                <div>
+                  <h3 className="text-lg font-black tracking-wide">Quick Controls</h3>
+                  <p className="text-sky-200 text-xs mt-1">Add items directly to Process, Stories, Exhibitions, or Hero.</p>
+                </div>
+                <div className="flex flex-wrap items-center gap-2">
+                  <button
+                    onClick={() => {
+                      setActiveTab("process");
+                      setIsAddProcessOpen(true);
+                    }}
+                    className="px-3.5 py-2 bg-white text-[#142B70] rounded-xl text-xs font-bold hover:bg-sky-50 transition-colors flex items-center gap-1.5 shadow"
+                  >
+                    <Activity className="w-3.5 h-3.5" /> + Our Process
+                  </button>
+                  <button
+                    onClick={() => {
+                      setActiveTab("productStories");
+                      setIsAddStoryOpen(true);
+                    }}
+                    className="px-3.5 py-2 bg-sky-500 text-white rounded-xl text-xs font-bold hover:bg-sky-400 transition-colors flex items-center gap-1.5 shadow"
+                  >
+                    <BookOpen className="w-3.5 h-3.5" /> + Product Story
+                  </button>
+                  <button
+                    onClick={() => {
+                      setActiveTab("stories");
+                      setIsAddReelOpen(true);
+                    }}
+                    className="px-3.5 py-2 bg-white/10 hover:bg-white/20 text-white border border-white/20 rounded-xl text-xs font-bold transition-colors flex items-center gap-1.5"
+                  >
+                    <Video className="w-3.5 h-3.5" /> + Video Reel
+                  </button>
+                  <button
+                    onClick={() => {
+                      setActiveTab("exhibitions");
+                      setIsAddExOpen(true);
+                    }}
+                    className="px-3.5 py-2 bg-white/10 hover:bg-white/20 text-white border border-white/20 rounded-xl text-xs font-bold transition-colors flex items-center gap-1.5"
+                  >
+                    <Landmark className="w-3.5 h-3.5" /> + Exhibition
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            {/* Recent Orders */}
+            <div className="bg-white rounded-2xl border border-slate-200/80 shadow-sm overflow-hidden">
+              <div className="p-6 border-b border-slate-100 flex items-center justify-between">
+                <div>
+                  <h3 className="text-base font-bold text-slate-900">Recent Customer Orders</h3>
+                  <p className="text-xs text-slate-500">Live order stream</p>
+                </div>
+                <button
+                  onClick={() => setActiveTab("orders")}
+                  className="text-xs font-bold text-blue-600 hover:text-blue-800 transition-colors"
+                >
+                  View All Orders →
+                </button>
+              </div>
+
+              {orders.length === 0 ? (
+                <div className="py-12 text-center text-slate-400 text-sm">
+                  No orders placed yet.
+                </div>
+              ) : (
+                <div className="divide-y divide-slate-100">
+                  {orders.slice(0, 5).map((order) => (
+                    <div key={order.id} className="p-4 sm:p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4 hover:bg-slate-50/60 transition-colors">
+                      <div className="space-y-1">
+                        <div className="flex items-center gap-2">
+                          <span className="font-mono text-xs font-bold text-slate-900">{order.order_number}</span>
+                          <span className="px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider bg-blue-100 text-blue-800">
+                            {order.order_status}
+                          </span>
+                        </div>
+                        <p className="text-xs text-slate-600">
+                          {order.customer_name} • {order.city}, {order.state}
+                        </p>
+                      </div>
+                      <div className="text-right">
+                        <p className="text-sm font-black text-slate-900">₹{order.total_amount}</p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          </div>
+        )}
+
+        {/* TAB 2: OUR PROCESS MANAGER */}
+        {activeTab === "process" && (
+          <div className="space-y-6 animate-in fade-in duration-300">
+            <div className="flex items-center justify-between">
+              <div>
+                <h3 className="text-lg font-bold text-slate-900">OUR PROCESS — Scroll-Driven Formulation Steps</h3>
+                <p className="text-xs text-slate-500">The 3 sticky viewport steps with curved SVG path on the homepage.</p>
+              </div>
+              <button
+                onClick={() => setIsAddProcessOpen(true)}
+                className="px-4 py-2 bg-[#142B70] text-white rounded-xl text-xs sm:text-sm font-bold hover:bg-[#1E3A8A] transition-colors flex items-center gap-2 shadow-sm"
+              >
+                <Plus className="w-4 h-4" /> Add Process Step
+              </button>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {processSteps.map((step, idx) => (
+                <div key={idx} className="bg-white rounded-2xl border border-slate-200/90 shadow-sm overflow-hidden flex flex-col justify-between">
+                  <div className="p-6 space-y-4">
+                    <div className="flex items-center justify-between">
+                      <span className="px-2.5 py-1 bg-[#142B70] text-white text-[11px] font-mono font-black rounded-md">
+                        STEP {step.step}
+                      </span>
+                      <button
+                        onClick={() => handleDeleteProcess(idx)}
+                        className="text-slate-400 hover:text-red-600 transition-colors p-1"
+                        title="Delete step"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </button>
+                    </div>
+
+                    <div className="space-y-1">
+                      <p className="text-[10px] font-bold text-[#2445A8] uppercase tracking-wider">{step.category}</p>
+                      <h4 className="text-base font-black text-slate-900 uppercase">{step.title}</h4>
+                      <p className="text-xs font-semibold text-slate-700">{step.productName}</p>
+                      <p className="text-xs text-slate-500 line-clamp-3 mt-2">{step.description}</p>
+                    </div>
+
+                    <div className="relative h-40 rounded-xl overflow-hidden bg-slate-50 border border-slate-200">
+                      <Image src={step.image} alt={step.title} fill className="object-contain p-2" />
+                    </div>
+
+                    <div className="space-y-1 pt-1">
+                      <p className="text-[10px] font-bold uppercase tracking-wider text-slate-500">Key Benefits</p>
+                      <ul className="text-xs text-slate-600 space-y-1">
+                        {step.benefits?.map((b, bIdx) => (
+                          <li key={bIdx} className="flex items-start gap-1.5">
+                            <Check className="w-3.5 h-3.5 text-emerald-600 shrink-0 mt-0.5" />
+                            <span>{b}</span>
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  </div>
+
+                  <div className="p-3.5 bg-slate-50 border-t border-slate-100 text-xs text-slate-600">
+                    <span className="font-bold text-slate-800">Result:</span> {step.result}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* TAB 3: PRODUCT STORY MANAGER */}
+        {activeTab === "productStories" && (
+          <div className="space-y-6 animate-in fade-in duration-300">
+            <div className="flex items-center justify-between">
+              <div>
+                <h3 className="text-lg font-bold text-slate-900">PRODUCT STORY — Behind The Formulation</h3>
+                <p className="text-xs text-slate-500">Editorial stories featuring large product photography and clinical proof badges.</p>
+              </div>
+              <button
+                onClick={() => setIsAddStoryOpen(true)}
+                className="px-4 py-2 bg-[#142B70] text-white rounded-xl text-xs sm:text-sm font-bold hover:bg-[#1E3A8A] transition-colors flex items-center gap-2 shadow-sm"
+              >
+                <Plus className="w-4 h-4" /> Add Product Story
+              </button>
+            </div>
+
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              {productStories.map((story) => (
+                <div key={story.id} className="bg-white rounded-2xl border border-slate-200/90 shadow-sm overflow-hidden flex flex-col justify-between">
+                  <div className="p-6 space-y-4">
+                    <div className="flex items-center justify-between">
+                      <span className="px-2.5 py-1 bg-sky-100 text-sky-800 text-[11px] font-bold rounded-md uppercase">
+                        {story.badge}
+                      </span>
+                      <button
+                        onClick={() => handleDeleteProductStory(story.id)}
+                        className="text-slate-400 hover:text-red-600 transition-colors p-1"
+                        title="Delete story"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </button>
+                    </div>
+
+                    <div className="space-y-1">
+                      <h4 className="text-xl font-black text-slate-900">{story.title}</h4>
+                      <p className="text-xs text-slate-600 leading-relaxed line-clamp-3">{story.description}</p>
+                    </div>
+
+                    <div className="relative h-48 rounded-xl overflow-hidden bg-gradient-to-tr from-[#EAF3FF] to-white border border-slate-200">
+                      <Image src={story.image} alt={story.title} fill className="object-contain p-4" />
+                      <div className="absolute bottom-2 left-2 bg-white/95 rounded-lg px-2.5 py-1 border text-[11px] font-bold text-slate-800 shadow">
+                        🛡️ {story.floatingBadgeTitle || "Clinical Bio-Tech Formula"}
+                      </div>
+                    </div>
+
+                    <div className="space-y-1">
+                      <p className="text-[10px] font-bold uppercase tracking-wider text-slate-500">Benefits</p>
+                      <ul className="text-xs text-slate-600 space-y-1">
+                        {(story.benefits || []).map((b: string, bIdx: number) => (
+                          <li key={bIdx} className="flex items-start gap-1.5">
+                            <Check className="w-3.5 h-3.5 text-emerald-600 shrink-0 mt-0.5" />
+                            <span>{b}</span>
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  </div>
+
+                  <div className="p-4 bg-slate-50 border-t border-slate-100 flex items-center justify-between text-xs">
+                    <span className="font-bold text-slate-700">CTA: {story.ctaText}</span>
+                    <span className="text-slate-400 font-mono text-[11px]">{story.ctaLink}</span>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* TAB 4: SHOP THE STORIES MANAGER */}
+        {activeTab === "stories" && (
+          <div className="space-y-6 animate-in fade-in duration-300">
+            <div className="flex items-center justify-between">
+              <div>
+                <h3 className="text-lg font-bold text-slate-900">SHOP THE STORIES — Video Reels & Tutorials</h3>
+                <p className="text-xs text-slate-500">Portrait video reel cards with quick cart add & view count badges.</p>
+              </div>
+              <button
+                onClick={() => setIsAddReelOpen(true)}
+                className="px-4 py-2 bg-[#142B70] text-white rounded-xl text-xs sm:text-sm font-bold hover:bg-[#1E3A8A] transition-colors flex items-center gap-2 shadow-sm"
+              >
+                <Plus className="w-4 h-4" /> Add Story Reel
+              </button>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+              {storyReels.map((reel) => (
+                <div key={reel.id} className="bg-white rounded-2xl border border-slate-200/90 shadow-sm overflow-hidden flex flex-col justify-between">
+                  <div>
+                    <div className="relative aspect-[9/14] bg-black">
+                      <Image src={reel.image || reel.coverImage || "/images/hero_podium.png"} alt={reel.title} fill className="object-cover" />
+                      <div className="absolute top-2.5 right-2.5 bg-black/70 text-white text-[10px] font-bold px-2 py-0.5 rounded-full">
+                        👁️ {reel.views || "1.5K"}
+                      </div>
+                      <div className="absolute top-2.5 left-2.5 bg-[#142B70] text-white text-[9px] font-black uppercase px-2 py-0.5 rounded-full">
+                        {reel.tag || "STORY"}
+                      </div>
+                      <div className="absolute inset-0 flex items-center justify-center">
+                        <div className="w-10 h-10 rounded-full bg-white/90 text-[#142B70] flex items-center justify-center shadow-lg">
+                          <Play className="w-4 h-4 fill-[#142B70] ml-0.5" />
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="p-4 space-y-1">
+                      <h4 className="text-xs font-bold text-slate-900 line-clamp-1">{reel.title}</h4>
+                      <p className="text-[11px] text-slate-500 truncate">{reel.productName || reel.taggedProductTitle || reel.title}</p>
+                      <p className="text-xs font-black text-[#142B70]">
+                        ₹{reel.productPrice ?? reel.taggedProductPrice ?? 999}{" "}
+                        <span className="line-through text-slate-400 text-[10px]">₹{reel.productOriginalPrice ?? reel.taggedProductPrice ?? 1499}</span>
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="p-3 bg-slate-50 border-t border-slate-100 flex items-center justify-between text-xs">
+                    <span className="text-slate-400 font-mono text-[10px] truncate max-w-[120px]">{reel.handle || reel.taggedProductId || reel.id}</span>
+                    <button
+                      onClick={() => handleDeleteStoryReel(reel.id)}
+                      className="text-red-600 hover:text-red-800 font-bold text-xs"
+                    >
+                      Delete
+                    </button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* TAB 5: EXHIBITION HIGHLIGHTS MANAGER */}
+        {activeTab === "exhibitions" && (
+          <div className="space-y-6 animate-in fade-in duration-300">
+            <div className="flex items-center justify-between">
+              <div>
+                <h3 className="text-lg font-bold text-slate-900">EXHIBITION HIGHLIGHTS — On Tour Across India</h3>
+                <p className="text-xs text-slate-500">Trade shows, salon summits, and live convention showcases.</p>
+              </div>
+              <button
+                onClick={() => setIsAddExOpen(true)}
+                className="px-4 py-2 bg-[#142B70] text-white rounded-xl text-xs sm:text-sm font-bold hover:bg-[#1E3A8A] transition-colors flex items-center gap-2 shadow-sm"
+              >
+                <Plus className="w-4 h-4" /> Add Exhibition
+              </button>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+              {exhibitions.map((ex) => (
+                <div key={ex.id} className="bg-white rounded-2xl border border-slate-200/90 shadow-sm overflow-hidden flex flex-col justify-between">
+                  <div className="relative aspect-[3/4] bg-black">
+                    <Image src={ex.image} alt={ex.title} fill className="object-cover" />
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
+                    <div className="absolute top-3 left-3 bg-white/90 text-[#142B70] text-[10px] font-black uppercase px-2 py-0.5 rounded-full">
+                      {ex.tag}
+                    </div>
+                    <div className="absolute bottom-3 inset-x-3 text-white space-y-0.5">
+                      <h4 className="text-sm font-black leading-tight drop-shadow">{ex.title}</h4>
+                      <p className="text-xs text-sky-200 truncate">{ex.location}</p>
+                      <p className="text-[10px] text-slate-300">{ex.attendees}</p>
+                    </div>
+                  </div>
+
+                  <div className="p-3 bg-slate-50 border-t border-slate-100 flex items-center justify-between">
+                    <span className="text-[10px] font-mono text-slate-400">ID: {ex.id}</span>
+                    <button
+                      onClick={() => handleDeleteExhibition(ex.id)}
+                      className="text-red-600 hover:text-red-800 font-bold text-xs"
+                    >
+                      Delete
+                    </button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* TAB 6: PRODUCTS MANAGER */}
+        {activeTab === "products" && (
+          <div className="space-y-6 animate-in fade-in duration-300">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+              <div className="relative flex-1 max-w-md">
+                <Search className="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" />
+                <input
+                  type="text"
+                  placeholder="Search products by title or category..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="w-full pl-10 pr-4 py-2.5 bg-white border border-slate-200 rounded-xl text-xs sm:text-sm focus:outline-none focus:border-blue-600 shadow-sm"
+                />
+              </div>
+              <button
+                onClick={() => setIsAddProductOpen(true)}
+                className="px-5 py-2.5 bg-[#142B70] text-white rounded-xl text-xs sm:text-sm font-bold hover:bg-[#1E3A8A] transition-colors flex items-center gap-2 shadow-sm self-start sm:self-auto"
+              >
+                <Plus className="w-4 h-4" /> Add New Product
+              </button>
+            </div>
+
+            <div className="bg-white rounded-2xl border border-slate-200/80 shadow-sm overflow-hidden">
+              <div className="overflow-x-auto">
+                <table className="w-full text-left text-xs sm:text-sm">
+                  <thead className="bg-slate-50 border-b border-slate-200 text-slate-600 font-bold uppercase tracking-wider text-[11px]">
+                    <tr>
+                      <th className="px-6 py-3.5">Product</th>
+                      <th className="px-6 py-3.5">Category</th>
+                      <th className="px-6 py-3.5">Price</th>
+                      <th className="px-6 py-3.5">Badges</th>
+                      <th className="px-6 py-3.5 text-right">Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-slate-100">
+                    {filteredProducts.map((prod) => (
+                      <tr key={prod.id} className="hover:bg-slate-50/60 transition-colors">
+                        <td className="px-6 py-4">
+                          <div className="flex items-center gap-3.5">
+                            <div className="w-12 h-12 relative rounded-lg overflow-hidden border border-slate-200 bg-slate-50 shrink-0">
+                              <Image src={prod.image} alt={prod.title} fill className="object-cover" />
+                            </div>
+                            <div>
+                              <p className="font-bold text-slate-900 leading-snug line-clamp-1">{prod.title}</p>
+                              <p className="text-[11px] text-slate-400 mt-0.5 font-mono">{prod.id}</p>
+                            </div>
+                          </div>
+                        </td>
+                        <td className="px-6 py-4 text-slate-600 font-medium">{prod.category}</td>
+                        <td className="px-6 py-4">
+                          <span className="font-black text-slate-900">₹{prod.price}</span>
+                          {prod.originalPrice && prod.originalPrice > prod.price && (
+                            <span className="text-slate-400 line-through ml-2 text-xs">₹{prod.originalPrice}</span>
+                          )}
+                        </td>
+                        <td className="px-6 py-4">
+                          <div className="flex items-center gap-1.5 flex-wrap">
+                            {prod.badge && (
+                              <span className="px-2 py-0.5 bg-blue-100 text-blue-800 rounded text-[10px] font-bold">
+                                {prod.badge}
+                              </span>
+                            )}
+                            {prod.isBestseller && (
+                              <span className="px-2 py-0.5 bg-amber-100 text-amber-800 rounded text-[10px] font-bold">
+                                BESTSELLER
+                              </span>
+                            )}
+                          </div>
+                        </td>
+                        <td className="px-6 py-4 text-right">
+                          <button
+                            onClick={() => handleDeleteProduct(prod.id)}
+                            className="p-1.5 text-slate-400 hover:text-red-600 rounded-lg hover:bg-red-50 transition-colors"
+                            title="Delete Product"
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </button>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* TAB 7: HERO BANNERS */}
+        {activeTab === "hero" && (
+          <div className="space-y-6 animate-in fade-in duration-300">
+            <div className="flex items-center justify-between">
+              <div>
+                <h3 className="text-lg font-bold text-slate-900">Landing Page Hero Carousel</h3>
+                <p className="text-xs text-slate-500">Manage headline sliders, campaign imagery, and CTA buttons.</p>
+              </div>
+              <button
+                onClick={() => setIsAddHeroOpen(true)}
+                className="px-4 py-2 bg-[#142B70] text-white rounded-xl text-xs sm:text-sm font-bold hover:bg-[#1E3A8A] transition-colors flex items-center gap-2 shadow-sm"
+              >
+                <Plus className="w-4 h-4" /> Add Hero Slide
+              </button>
+            </div>
+
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              {heroSlides.map((slide, idx) => (
+                <div key={slide.id} className="bg-white rounded-2xl border border-slate-200/90 shadow-sm overflow-hidden flex flex-col justify-between">
+                  <div className="p-6 space-y-4">
+                    <div className="flex items-center justify-between">
+                      <span className="px-2.5 py-1 bg-sky-100 text-sky-800 text-[11px] font-bold rounded-md">
+                        SLIDE #{idx + 1} • {slide.eyebrow}
+                      </span>
+                      <button
+                        onClick={() => handleDeleteHero(slide.id)}
+                        className="p-1 text-slate-400 hover:text-red-600 transition-colors"
+                        title="Delete Slide"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </button>
+                    </div>
+
+                    <div className="space-y-1">
+                      <h4 className="text-xl font-black text-slate-900 tracking-tight leading-snug">
+                        {slide.title1} {slide.title2}
+                      </h4>
+                      <p className="text-xs text-slate-600 line-clamp-2">{slide.description}</p>
+                    </div>
+
+                    <div className="relative h-44 rounded-xl overflow-hidden bg-slate-100 border border-slate-200">
+                      <Image src={slide.image} alt={slide.title1} fill className="object-cover" />
+                      <div className="absolute bottom-2 right-2 px-3 py-1 bg-black/70 backdrop-blur-md rounded-lg text-white font-black text-xs">
+                        ₹{slide.price} <span className="line-through text-slate-400 text-[10px] ml-1">₹{slide.originalPrice}</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="p-4 bg-slate-50 border-t border-slate-100 text-xs flex items-center justify-between">
+                    <span className="font-bold text-slate-700">CTA: {slide.ctaText || "SHOP NOW"}</span>
+                    <span className="text-slate-400 font-mono text-[11px]">{slide.ctaLink || "/"}</span>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* TAB 8: ANNOUNCEMENTS */}
+        {activeTab === "announcements" && (
+          <div className="space-y-6 animate-in fade-in duration-300">
+            <div className="flex items-center justify-between">
+              <div>
+                <h3 className="text-lg font-bold text-slate-900">Top Announcement Bar Ticker</h3>
+                <p className="text-xs text-slate-500">Live scrolling messages shown at the very top of the website.</p>
+              </div>
+              <button
+                onClick={() => setIsAddAnnOpen(true)}
+                className="px-4 py-2 bg-[#142B70] text-white rounded-xl text-xs sm:text-sm font-bold hover:bg-[#1E3A8A] transition-colors flex items-center gap-2 shadow-sm"
+              >
+                <Plus className="w-4 h-4" /> Add Notice
+              </button>
+            </div>
+
+            <div className="bg-white rounded-2xl border border-slate-200/80 shadow-sm divide-y divide-slate-100 overflow-hidden">
+              {announcements.map((item, index) => (
+                <div key={item.id || index} className="p-4 sm:p-5 flex items-center justify-between gap-4 hover:bg-slate-50/60 transition-colors">
+                  <div className="space-y-1">
+                    <p className="text-sm font-bold text-slate-900">{item.text}</p>
+                    <p className="text-xs text-slate-500">
+                      Button: <span className="font-semibold text-blue-600">{item.cta}</span> • Link: <span className="font-mono text-[11px]">{item.link}</span>
+                    </p>
+                  </div>
+                  <button
+                    onClick={() => handleDeleteAnnouncement(item.id)}
+                    className="p-1.5 text-slate-400 hover:text-red-600 rounded-lg hover:bg-red-50 transition-colors"
+                  >
+                    <Trash2 className="w-4 h-4" />
+                  </button>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* TAB 9: CATEGORIES */}
+        {activeTab === "categories" && (
+          <div className="space-y-6 animate-in fade-in duration-300">
+            <div className="flex items-center justify-between">
+              <div>
+                <h3 className="text-lg font-bold text-slate-900">Store Categories</h3>
+                <p className="text-xs text-slate-500">Categories shown on the homepage and catalog drawer.</p>
+              </div>
+              <button
+                onClick={() => setIsAddCatOpen(true)}
+                className="px-4 py-2 bg-[#142B70] text-white rounded-xl text-xs sm:text-sm font-bold hover:bg-[#1E3A8A] transition-colors flex items-center gap-2 shadow-sm"
+              >
+                <Plus className="w-4 h-4" /> Add Category
+              </button>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+              {categories.map((cat) => (
+                <div key={cat.id} className="bg-white rounded-2xl border border-slate-200/90 shadow-sm overflow-hidden flex flex-col justify-between">
+                  <div className="p-5 space-y-3">
+                    <div className="relative h-36 rounded-xl overflow-hidden bg-slate-100 border border-slate-200">
+                      <Image src={cat.image} alt={cat.name} fill className="object-cover" />
+                      <div className="absolute top-2 right-2 px-2.5 py-0.5 bg-black/60 backdrop-blur-md rounded-md text-white font-bold text-[11px]">
+                        {cat.itemCount} Items
+                      </div>
+                    </div>
+                    <div>
+                      <h4 className="text-base font-bold text-slate-900">{cat.name}</h4>
+                      <p className="text-xs text-slate-500 font-mono mt-0.5">{cat.link}</p>
+                    </div>
+                  </div>
+                  <div className="p-3.5 bg-slate-50 border-t border-slate-100 flex items-center justify-between">
+                    <span className="text-[11px] font-bold text-slate-500">ID: {cat.id}</span>
+                    <button
+                      onClick={() => handleDeleteCategory(cat.id)}
+                      className="text-xs text-red-600 hover:text-red-800 font-semibold flex items-center gap-1"
+                    >
+                      <Trash2 className="w-3.5 h-3.5" /> Delete
+                    </button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* TAB 10: TESTIMONIALS */}
+        {activeTab === "testimonials" && (
+          <div className="space-y-6 animate-in fade-in duration-300">
+            <div className="flex items-center justify-between">
+              <div>
+                <h3 className="text-lg font-bold text-slate-900">Salon & Customer Reviews</h3>
+                <p className="text-xs text-slate-500">Real social proof displayed on the landing page.</p>
+              </div>
+              <button
+                onClick={() => setIsAddTestOpen(true)}
+                className="px-4 py-2 bg-[#142B70] text-white rounded-xl text-xs sm:text-sm font-bold hover:bg-[#1E3A8A] transition-colors flex items-center gap-2 shadow-sm"
+              >
+                <Plus className="w-4 h-4" /> Add Review
+              </button>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {testimonials.map((t) => (
+                <div key={t.id} className="bg-white p-5 rounded-2xl border border-slate-200/90 shadow-sm flex flex-col justify-between space-y-4">
+                  <div className="space-y-3">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-3">
+                        <div className="w-10 h-10 rounded-full relative overflow-hidden bg-slate-100 border border-slate-200">
+                          <Image src={t.avatar} alt={t.name} fill className="object-cover" />
+                        </div>
+                        <div>
+                          <p className="text-sm font-bold text-slate-900">{t.name}</p>
+                          <p className="text-[11px] text-slate-500">{t.role} • {t.location}</p>
+                        </div>
+                      </div>
+                      <button onClick={() => handleDeleteTestimonial(t.id)} className="text-slate-400 hover:text-red-600">
+                        <Trash2 className="w-4 h-4" />
+                      </button>
+                    </div>
+                    <div className="flex items-center gap-1 text-amber-400">
+                      {[...Array(t.rating || 5)].map((_, i) => (
+                        <Star key={i} className="w-4 h-4 fill-amber-400" />
+                      ))}
+                    </div>
+                    <p className="text-xs text-slate-600 leading-relaxed italic">&quot;{t.review}&quot;</p>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* TAB 11: FAQS */}
+        {activeTab === "faqs" && (
+          <div className="space-y-6 animate-in fade-in duration-300">
+            <div className="flex items-center justify-between">
+              <div>
+                <h3 className="text-lg font-bold text-slate-900">Frequently Asked Questions (FAQs)</h3>
+                <p className="text-xs text-slate-500">Accordion questions answered for customers on the landing page.</p>
+              </div>
+              <button
+                onClick={() => setIsAddFaqOpen(true)}
+                className="px-4 py-2 bg-[#142B70] text-white rounded-xl text-xs sm:text-sm font-bold hover:bg-[#1E3A8A] transition-colors flex items-center gap-2 shadow-sm"
+              >
+                <Plus className="w-4 h-4" /> Add FAQ
+              </button>
+            </div>
+
+            <div className="bg-white rounded-2xl border border-slate-200/80 shadow-sm divide-y divide-slate-100 overflow-hidden">
+              {faqs.map((faq) => (
+                <div key={faq.id} className="p-5 flex items-start justify-between gap-4 hover:bg-slate-50/60 transition-colors">
+                  <div className="space-y-1.5 flex-1">
+                    <h4 className="text-sm font-bold text-slate-900">{faq.question}</h4>
+                    <p className="text-xs text-slate-600 leading-relaxed">{faq.answer}</p>
+                  </div>
+                  <button
+                    onClick={() => handleDeleteFaq(faq.id)}
+                    className="p-1.5 text-slate-400 hover:text-red-600 rounded-lg hover:bg-red-50 transition-colors shrink-0"
+                  >
+                    <Trash2 className="w-4 h-4" />
+                  </button>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* TAB 12: ORDERS */}
+        {activeTab === "orders" && (
+          <div className="space-y-6 animate-in fade-in duration-300">
+            <div className="flex items-center justify-between">
+              <div>
+                <h3 className="text-lg font-bold text-slate-900">Customer Orders ({orders.length})</h3>
+                <p className="text-xs text-slate-500">Real-time order statuses and customer shipping addresses.</p>
+              </div>
+            </div>
+
+            <div className="bg-white rounded-2xl border border-slate-200/80 shadow-sm overflow-hidden">
+              <div className="divide-y divide-slate-100">
+                {orders.length === 0 ? (
+                  <div className="py-16 text-center text-slate-400 text-sm">No orders placed yet.</div>
+                ) : (
+                  orders.map((ord) => (
+                    <div key={ord.id} className="p-6 space-y-4 hover:bg-slate-50/40 transition-colors">
+                      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                        <div className="space-y-1">
+                          <div className="flex items-center gap-3">
+                            <span className="font-mono text-sm font-black text-slate-900">{ord.order_number}</span>
+                            <span className="text-xs text-slate-400">• {new Date(ord.created_at).toLocaleString()}</span>
+                          </div>
+                          <p className="text-xs font-semibold text-slate-700">
+                            {ord.customer_name} ({ord.customer_phone}) • {ord.customer_email}
+                          </p>
+                        </div>
+
+                        <div className="flex items-center gap-2">
+                          <span className="text-xs font-bold text-slate-500">Status:</span>
+                          <select
+                            value={ord.order_status}
+                            onChange={(e) => handleUpdateOrderStatus(ord.id, e.target.value as any)}
+                            className="text-xs font-bold px-3 py-1.5 rounded-lg border border-slate-300 bg-white focus:outline-none focus:border-blue-600 shadow-sm"
+                          >
+                            <option value="confirmed">Confirmed</option>
+                            <option value="processing">Processing</option>
+                            <option value="shipped">Shipped</option>
+                            <option value="delivered">Delivered</option>
+                            <option value="cancelled">Cancelled</option>
+                          </select>
+                        </div>
+                      </div>
+
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs bg-slate-50/80 p-4 rounded-xl border border-slate-100">
+                        <div>
+                          <p className="font-bold text-slate-700 mb-2 uppercase text-[10px] tracking-wider">Ordered Products</p>
+                          <div className="space-y-1.5">
+                            {ord.items?.map((it, idx) => (
+                              <div key={idx} className="flex items-center justify-between text-slate-600">
+                                <span className="line-clamp-1">{it.title} × {it.quantity}</span>
+                                <span className="font-bold text-slate-900">₹{it.price * it.quantity}</span>
+                              </div>
+                            ))}
+                            <div className="pt-2 border-t border-slate-200 flex items-center justify-between font-black text-slate-900 text-sm">
+                              <span>Total Paid:</span>
+                              <span className="text-[#142B70]">₹{ord.total_amount}</span>
+                            </div>
+                          </div>
+                        </div>
+
+                        <div>
+                          <p className="font-bold text-slate-700 mb-2 uppercase text-[10px] tracking-wider">Shipping Destination</p>
+                          <p className="text-slate-600 leading-relaxed">
+                            {ord.shipping_address}<br />
+                            {ord.city}, {ord.state} - <span className="font-bold text-slate-800">{ord.pincode}</span>
+                          </p>
+                          <div className="mt-3">
+                            <Link
+                              href={`/order-success/${ord.id}`}
+                              target="_blank"
+                              className="text-blue-600 hover:text-blue-800 font-bold inline-flex items-center gap-1 text-xs"
+                            >
+                              Open Customer Invoice <ExternalLink className="w-3 h-3" />
+                            </Link>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  ))
+                )}
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* TAB 13: COUPONS */}
+        {activeTab === "coupons" && (
+          <div className="space-y-6 animate-in fade-in duration-300">
+            <div className="flex items-center justify-between">
+              <div>
+                <h3 className="text-lg font-bold text-slate-900">Discounts & Promo Coupons</h3>
+                <p className="text-xs text-slate-500">Live codes redeemable by users during checkout.</p>
+              </div>
+              <button
+                onClick={() => setIsAddCouponOpen(true)}
+                className="px-4 py-2 bg-[#142B70] text-white rounded-xl text-xs sm:text-sm font-bold hover:bg-[#1E3A8A] transition-colors flex items-center gap-2 shadow-sm"
+              >
+                <Plus className="w-4 h-4" /> Create Coupon
+              </button>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
+              {coupons.map((cpn, idx) => (
+                <div key={idx} className="bg-white p-5 rounded-2xl border border-slate-200/90 shadow-sm space-y-3">
+                  <div className="flex items-center justify-between">
+                    <span className="px-2.5 py-1 bg-emerald-100 text-emerald-800 rounded-md font-mono text-sm font-black tracking-wider">
+                      {cpn.code}
+                    </span>
+                    <span className="text-[11px] font-bold text-slate-400 uppercase">ACTIVE</span>
+                  </div>
+
+                  <div>
+                    <p className="text-xl font-black text-slate-900">
+                      {cpn.discountType === "percentage" ? `${cpn.discountValue}% OFF` : `₹${cpn.discountValue} OFF`}
+                    </p>
+                    <p className="text-xs text-slate-500 mt-1">Min. order: ₹{cpn.minOrderValue}</p>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* TAB 14: SETTINGS */}
+        {activeTab === "settings" && (
+          <div className="space-y-6 animate-in fade-in duration-300 max-w-3xl">
+            <div>
+              <h3 className="text-lg font-bold text-slate-900">Store Settings & Contact Details</h3>
+              <p className="text-xs text-slate-500">Brand contact information shown on the footer, contact page, and invoices.</p>
+            </div>
+
+            <form onSubmit={handleSaveBrandSettings} className="bg-white p-6 sm:p-8 rounded-2xl border border-slate-200/90 shadow-sm space-y-5">
+              <div>
+                <label className="block text-xs font-bold uppercase tracking-wider text-slate-700 mb-1">Store / Brand Name</label>
+                <input
+                  type="text"
+                  value={brandSettings.name}
+                  onChange={(e) => setBrandSettings({ ...brandSettings, name: e.target.value })}
+                  className="w-full px-4 py-2.5 border border-slate-300 rounded-xl text-sm focus:outline-none focus:border-blue-600"
+                  required
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-bold uppercase tracking-wider text-slate-700 mb-1">Brand Tagline</label>
+                <input
+                  type="text"
+                  value={brandSettings.tagline}
+                  onChange={(e) => setBrandSettings({ ...brandSettings, tagline: e.target.value })}
+                  className="w-full px-4 py-2.5 border border-slate-300 rounded-xl text-sm focus:outline-none focus:border-blue-600"
+                />
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-xs font-bold uppercase tracking-wider text-slate-700 mb-1">Support Email</label>
+                  <input
+                    type="email"
+                    value={brandSettings.supportEmail}
+                    onChange={(e) => setBrandSettings({ ...brandSettings, supportEmail: e.target.value })}
+                    className="w-full px-4 py-2.5 border border-slate-300 rounded-xl text-sm focus:outline-none focus:border-blue-600"
+                    required
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-bold uppercase tracking-wider text-slate-700 mb-1">Support Phone</label>
+                  <input
+                    type="text"
+                    value={brandSettings.supportPhone}
+                    onChange={(e) => setBrandSettings({ ...brandSettings, supportPhone: e.target.value })}
+                    className="w-full px-4 py-2.5 border border-slate-300 rounded-xl text-sm focus:outline-none focus:border-blue-600"
+                    required
+                  />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-xs font-bold uppercase tracking-wider text-slate-700 mb-1">WhatsApp Order Support</label>
+                  <input
+                    type="text"
+                    value={brandSettings.whatsappNumber}
+                    onChange={(e) => setBrandSettings({ ...brandSettings, whatsappNumber: e.target.value })}
+                    className="w-full px-4 py-2.5 border border-slate-300 rounded-xl text-sm focus:outline-none focus:border-blue-600"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-bold uppercase tracking-wider text-slate-700 mb-1">Free Shipping Min Order (₹)</label>
+                  <input
+                    type="number"
+                    value={brandSettings.freeShippingThreshold}
+                    onChange={(e) => setBrandSettings({ ...brandSettings, freeShippingThreshold: Number(e.target.value) })}
+                    className="w-full px-4 py-2.5 border border-slate-300 rounded-xl text-sm focus:outline-none focus:border-blue-600"
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-xs font-bold uppercase tracking-wider text-slate-700 mb-1">Headquarters / Warehouse Address</label>
+                <textarea
+                  rows={3}
+                  value={brandSettings.address}
+                  onChange={(e) => setBrandSettings({ ...brandSettings, address: e.target.value })}
+                  className="w-full px-4 py-2.5 border border-slate-300 rounded-xl text-sm focus:outline-none focus:border-blue-600"
+                />
+              </div>
+
+              <div className="pt-2">
+                <button
+                  type="submit"
+                  className="px-6 py-3 bg-[#142B70] text-white rounded-xl text-sm font-bold hover:bg-[#1E3A8A] transition-colors flex items-center gap-2 shadow-sm"
+                >
+                  <Save className="w-4 h-4" /> Save Brand Settings
+                </button>
+              </div>
+            </form>
+          </div>
+        )}
+      </div>
+
+      {/* MODAL: ADD OUR PROCESS STEP */}
+      {isAddProcessOpen && (
+        <div className="fixed inset-0 z-50 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4 overflow-y-auto">
+          <div className="bg-white rounded-2xl max-w-lg w-full p-6 sm:p-8 space-y-4 shadow-2xl animate-in zoom-in-95">
+            <div className="flex items-center justify-between border-b pb-3">
+              <h3 className="text-base font-black text-slate-900">Add Formulation Process Step</h3>
+              <button onClick={() => setIsAddProcessOpen(false)} className="text-slate-400 hover:text-slate-600">✕</button>
+            </div>
+
+            <form onSubmit={handleCreateProcess} className="space-y-3.5">
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-xs font-bold text-slate-700 mb-1">Step Number</label>
+                  <input
+                    type="text"
+                    required
+                    placeholder="04"
+                    value={newProcess.step}
+                    onChange={(e) => setNewProcess({ ...newProcess, step: e.target.value })}
+                    className="w-full px-3.5 py-2 border rounded-xl text-xs sm:text-sm outline-none"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-bold text-slate-700 mb-1">Phase / Category</label>
+                  <input
+                    type="text"
+                    required
+                    placeholder="FOUNDATION PHASE"
+                    value={newProcess.category}
+                    onChange={(e) => setNewProcess({ ...newProcess, category: e.target.value })}
+                    className="w-full px-3.5 py-2 border rounded-xl text-xs sm:text-sm outline-none"
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-xs font-bold text-slate-700 mb-1">Step Title</label>
+                <input
+                  type="text"
+                  required
+                  placeholder="PREP & ROOT LIFT"
+                  value={newProcess.title}
+                  onChange={(e) => setNewProcess({ ...newProcess, title: e.target.value })}
+                  className="w-full px-3.5 py-2 border rounded-xl text-xs sm:text-sm outline-none"
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-bold text-slate-700 mb-1">Featured Product Name</label>
+                <input
+                  type="text"
+                  required
+                  placeholder="Aura Root Lift & Texture Volumizer"
+                  value={newProcess.productName}
+                  onChange={(e) => setNewProcess({ ...newProcess, productName: e.target.value })}
+                  className="w-full px-3.5 py-2 border rounded-xl text-xs sm:text-sm outline-none"
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-bold text-slate-700 mb-1">Description</label>
+                <textarea
+                  rows={2}
+                  value={newProcess.description}
+                  onChange={(e) => setNewProcess({ ...newProcess, description: e.target.value })}
+                  className="w-full px-3.5 py-2 border rounded-xl text-xs sm:text-sm outline-none"
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-bold text-slate-700 mb-1">Key Benefits (comma separated)</label>
+                <input
+                  type="text"
+                  value={newProcess.benefits}
+                  onChange={(e) => setNewProcess({ ...newProcess, benefits: e.target.value })}
+                  className="w-full px-3.5 py-2 border rounded-xl text-xs sm:text-sm outline-none"
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-bold text-slate-700 mb-1">Result Summary</label>
+                <input
+                  type="text"
+                  value={newProcess.result}
+                  onChange={(e) => setNewProcess({ ...newProcess, result: e.target.value })}
+                  className="w-full px-3.5 py-2 border rounded-xl text-xs sm:text-sm outline-none"
+                />
+              </div>
+
+              <div className="pt-2 flex justify-end gap-3">
+                <button
+                  type="button"
+                  onClick={() => setIsAddProcessOpen(false)}
+                  className="px-4 py-2 border rounded-xl text-xs font-semibold text-slate-600 hover:bg-slate-50"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  className="px-5 py-2 bg-[#142B70] text-white rounded-xl text-xs font-bold hover:bg-[#1E3A8A]"
+                >
+                  Save Process Step
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* MODAL: ADD PRODUCT STORY */}
+      {isAddStoryOpen && (
+        <div className="fixed inset-0 z-50 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4 overflow-y-auto">
+          <div className="bg-white rounded-2xl max-w-lg w-full p-6 sm:p-8 space-y-4 shadow-2xl animate-in zoom-in-95">
+            <div className="flex items-center justify-between border-b pb-3">
+              <h3 className="text-base font-black text-slate-900">Add Product Story</h3>
+              <button onClick={() => setIsAddStoryOpen(false)} className="text-slate-400 hover:text-slate-600">✕</button>
+            </div>
+
+            <form onSubmit={handleCreateProductStory} className="space-y-3.5">
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-xs font-bold text-slate-700 mb-1">Badge Tag</label>
+                  <input
+                    type="text"
+                    required
+                    value={newProductStory.badge}
+                    onChange={(e) => setNewProductStory({ ...newProductStory, badge: e.target.value })}
+                    className="w-full px-3.5 py-2 border rounded-xl text-xs sm:text-sm outline-none"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-bold text-slate-700 mb-1">Image URL</label>
+                  <input
+                    type="text"
+                    value={newProductStory.image}
+                    onChange={(e) => setNewProductStory({ ...newProductStory, image: e.target.value })}
+                    className="w-full px-3.5 py-2 border rounded-xl text-xs sm:text-sm outline-none"
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-xs font-bold text-slate-700 mb-1">Story Headline</label>
+                <input
+                  type="text"
+                  required
+                  value={newProductStory.title}
+                  onChange={(e) => setNewProductStory({ ...newProductStory, title: e.target.value })}
+                  className="w-full px-3.5 py-2 border rounded-xl text-xs sm:text-sm outline-none"
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-bold text-slate-700 mb-1">Description</label>
+                <textarea
+                  rows={2}
+                  required
+                  value={newProductStory.description}
+                  onChange={(e) => setNewProductStory({ ...newProductStory, description: e.target.value })}
+                  className="w-full px-3.5 py-2 border rounded-xl text-xs sm:text-sm outline-none"
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-bold text-slate-700 mb-1">Benefits (comma separated)</label>
+                <input
+                  type="text"
+                  value={newProductStory.benefits}
+                  onChange={(e) => setNewProductStory({ ...newProductStory, benefits: e.target.value })}
+                  className="w-full px-3.5 py-2 border rounded-xl text-xs sm:text-sm outline-none"
+                />
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-xs font-bold text-slate-700 mb-1">Floating Badge Title</label>
+                  <input
+                    type="text"
+                    value={newProductStory.floatingBadgeTitle}
+                    onChange={(e) => setNewProductStory({ ...newProductStory, floatingBadgeTitle: e.target.value })}
+                    className="w-full px-3.5 py-2 border rounded-xl text-xs sm:text-sm outline-none"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-bold text-slate-700 mb-1">Floating Badge Note</label>
+                  <input
+                    type="text"
+                    value={newProductStory.floatingBadgeDesc}
+                    onChange={(e) => setNewProductStory({ ...newProductStory, floatingBadgeDesc: e.target.value })}
+                    className="w-full px-3.5 py-2 border rounded-xl text-xs sm:text-sm outline-none"
+                  />
+                </div>
+              </div>
+
+              <div className="pt-2 flex justify-end gap-3">
+                <button
+                  type="button"
+                  onClick={() => setIsAddStoryOpen(false)}
+                  className="px-4 py-2 border rounded-xl text-xs font-semibold text-slate-600 hover:bg-slate-50"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  className="px-5 py-2 bg-[#142B70] text-white rounded-xl text-xs font-bold hover:bg-[#1E3A8A]"
+                >
+                  Save Product Story
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* MODAL: ADD STORY REEL */}
+      {isAddReelOpen && (
+        <div className="fixed inset-0 z-50 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4">
+          <div className="bg-white rounded-2xl max-w-md w-full p-6 space-y-4 shadow-2xl animate-in zoom-in-95">
+            <div className="flex items-center justify-between border-b pb-3">
+              <h3 className="text-base font-black text-slate-900">Add Video Reel</h3>
+              <button onClick={() => setIsAddReelOpen(false)} className="text-slate-400 hover:text-slate-600">✕</button>
+            </div>
+
+            <form onSubmit={handleCreateStoryReel} className="space-y-3.5">
+              <div>
+                <label className="block text-xs font-bold text-slate-700 mb-1">Reel Title</label>
+                <input
+                  type="text"
+                  required
+                  value={newReel.title}
+                  onChange={(e) => setNewReel({ ...newReel, title: e.target.value })}
+                  className="w-full px-3.5 py-2 border rounded-xl text-xs sm:text-sm outline-none"
+                />
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-xs font-bold text-slate-700 mb-1">Tag</label>
+                  <input
+                    type="text"
+                    value={newReel.tag}
+                    onChange={(e) => setNewReel({ ...newReel, tag: e.target.value })}
+                    className="w-full px-3.5 py-2 border rounded-xl text-xs sm:text-sm outline-none"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-bold text-slate-700 mb-1">Views Count</label>
+                  <input
+                    type="text"
+                    value={newReel.views}
+                    onChange={(e) => setNewReel({ ...newReel, views: e.target.value })}
+                    className="w-full px-3.5 py-2 border rounded-xl text-xs sm:text-sm outline-none"
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-xs font-bold text-slate-700 mb-1">Product Name</label>
+                <input
+                  type="text"
+                  value={newReel.productName}
+                  onChange={(e) => setNewReel({ ...newReel, productName: e.target.value })}
+                  className="w-full px-3.5 py-2 border rounded-xl text-xs sm:text-sm outline-none"
+                />
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-xs font-bold text-slate-700 mb-1">Price (₹)</label>
+                  <input
+                    type="number"
+                    value={newReel.productPrice}
+                    onChange={(e) => setNewReel({ ...newReel, productPrice: e.target.value })}
+                    className="w-full px-3.5 py-2 border rounded-xl text-xs sm:text-sm outline-none"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-bold text-slate-700 mb-1">Thumbnail Image</label>
+                  <input
+                    type="text"
+                    value={newReel.image}
+                    onChange={(e) => setNewReel({ ...newReel, image: e.target.value })}
+                    className="w-full px-3.5 py-2 border rounded-xl text-xs sm:text-sm outline-none"
+                  />
+                </div>
+              </div>
+
+              <div className="pt-2 flex justify-end gap-3">
+                <button
+                  type="button"
+                  onClick={() => setIsAddReelOpen(false)}
+                  className="px-4 py-2 border rounded-xl text-xs font-semibold text-slate-600 hover:bg-slate-50"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  className="px-5 py-2 bg-[#142B70] text-white rounded-xl text-xs font-bold hover:bg-[#1E3A8A]"
+                >
+                  Save Reel
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* MODAL: ADD EXHIBITION */}
+      {isAddExOpen && (
+        <div className="fixed inset-0 z-50 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4">
+          <div className="bg-white rounded-2xl max-w-md w-full p-6 space-y-4 shadow-2xl animate-in zoom-in-95">
+            <div className="flex items-center justify-between border-b pb-3">
+              <h3 className="text-base font-black text-slate-900">Add Exhibition Highlight</h3>
+              <button onClick={() => setIsAddExOpen(false)} className="text-slate-400 hover:text-slate-600">✕</button>
+            </div>
+
+            <form onSubmit={handleCreateExhibition} className="space-y-3.5">
+              <div>
+                <label className="block text-xs font-bold text-slate-700 mb-1">Exhibition Title</label>
+                <input
+                  type="text"
+                  required
+                  value={newEx.title}
+                  onChange={(e) => setNewEx({ ...newEx, title: e.target.value })}
+                  className="w-full px-3.5 py-2 border rounded-xl text-xs sm:text-sm outline-none"
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-bold text-slate-700 mb-1">Location / Venue</label>
+                <input
+                  type="text"
+                  required
+                  value={newEx.location}
+                  onChange={(e) => setNewEx({ ...newEx, location: e.target.value })}
+                  className="w-full px-3.5 py-2 border rounded-xl text-xs sm:text-sm outline-none"
+                />
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-xs font-bold text-slate-700 mb-1">Stage Tag</label>
+                  <input
+                    type="text"
+                    value={newEx.tag}
+                    onChange={(e) => setNewEx({ ...newEx, tag: e.target.value })}
+                    className="w-full px-3.5 py-2 border rounded-xl text-xs sm:text-sm outline-none"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-bold text-slate-700 mb-1">Attendees Tag</label>
+                  <input
+                    type="text"
+                    value={newEx.attendees}
+                    onChange={(e) => setNewEx({ ...newEx, attendees: e.target.value })}
+                    className="w-full px-3.5 py-2 border rounded-xl text-xs sm:text-sm outline-none"
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-xs font-bold text-slate-700 mb-1">Image URL</label>
+                <input
+                  type="text"
+                  value={newEx.image}
+                  onChange={(e) => setNewEx({ ...newEx, image: e.target.value })}
+                  className="w-full px-3.5 py-2 border rounded-xl text-xs sm:text-sm outline-none"
+                />
+              </div>
+
+              <div className="pt-2 flex justify-end gap-3">
+                <button
+                  type="button"
+                  onClick={() => setIsAddExOpen(false)}
+                  className="px-4 py-2 border rounded-xl text-xs font-semibold text-slate-600 hover:bg-slate-50"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  className="px-5 py-2 bg-[#142B70] text-white rounded-xl text-xs font-bold hover:bg-[#1E3A8A]"
+                >
+                  Save Exhibition
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* MODAL: ADD PRODUCT */}
+      {isAddProductOpen && (
+        <div className="fixed inset-0 z-50 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4 overflow-y-auto">
+          <div className="bg-white rounded-2xl max-w-lg w-full p-6 sm:p-8 space-y-4 shadow-2xl animate-in zoom-in-95">
+            <div className="flex items-center justify-between border-b pb-3">
+              <h3 className="text-base font-black text-slate-900">Add New Product</h3>
+              <button onClick={() => setIsAddProductOpen(false)} className="text-slate-400 hover:text-slate-600">✕</button>
+            </div>
+
+            <form onSubmit={handleCreateProduct} className="space-y-3.5">
+              <div>
+                <label className="block text-xs font-bold text-slate-700 mb-1">Product Title</label>
+                <input
+                  type="text"
+                  required
+                  value={newProduct.title}
+                  onChange={(e) => setNewProduct({ ...newProduct, title: e.target.value })}
+                  className="w-full px-3.5 py-2 border rounded-xl text-xs sm:text-sm outline-none"
+                />
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-xs font-bold text-slate-700 mb-1">Price (₹)</label>
+                  <input
+                    type="number"
+                    required
+                    value={newProduct.price}
+                    onChange={(e) => setNewProduct({ ...newProduct, price: e.target.value })}
+                    className="w-full px-3.5 py-2 border rounded-xl text-xs sm:text-sm outline-none"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-bold text-slate-700 mb-1">Original Price (₹)</label>
+                  <input
+                    type="number"
+                    value={newProduct.originalPrice}
+                    onChange={(e) => setNewProduct({ ...newProduct, originalPrice: e.target.value })}
+                    className="w-full px-3.5 py-2 border rounded-xl text-xs sm:text-sm outline-none"
+                  />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-xs font-bold text-slate-700 mb-1">Category</label>
+                  <select
+                    value={newProduct.category}
+                    onChange={(e) => setNewProduct({ ...newProduct, category: e.target.value })}
+                    className="w-full px-3.5 py-2 border rounded-xl text-xs sm:text-sm outline-none bg-white"
+                  >
+                    <option value="Skin & Hair">Skin & Hair</option>
+                    <option value="SERUMS & TREATMENTS">SERUMS & TREATMENTS</option>
+                    <option value="HAIR STYLING & HOLD">HAIR STYLING & HOLD</option>
+                    <option value="PINS, CLIPS & ACCESSORIES">PINS, CLIPS & ACCESSORIES</option>
+                    <option value="CURATED BEAUTY KITS">CURATED BEAUTY KITS</option>
+                    <option value="PROFESSIONAL COMBOS">PROFESSIONAL COMBOS</option>
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-xs font-bold text-slate-700 mb-1">Offer Badge</label>
+                  <input
+                    type="text"
+                    value={newProduct.badge}
+                    onChange={(e) => setNewProduct({ ...newProduct, badge: e.target.value })}
+                    className="w-full px-3.5 py-2 border rounded-xl text-xs sm:text-sm outline-none"
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-xs font-bold text-slate-700 mb-1">Image URL</label>
+                <input
+                  type="text"
+                  value={newProduct.image}
+                  onChange={(e) => setNewProduct({ ...newProduct, image: e.target.value })}
+                  className="w-full px-3.5 py-2 border rounded-xl text-xs sm:text-sm outline-none"
+                />
+              </div>
+
+              <div className="flex items-center gap-2">
+                <input
+                  type="checkbox"
+                  id="prod-bestseller"
+                  checked={newProduct.isBestseller}
+                  onChange={(e) => setNewProduct({ ...newProduct, isBestseller: e.target.checked })}
+                  className="w-4 h-4 text-blue-600 rounded"
+                />
+                <label htmlFor="prod-bestseller" className="text-xs font-bold text-slate-700">
+                  Feature on Homepage as Bestseller
+                </label>
+              </div>
+
+              <div className="pt-2 flex justify-end gap-3">
+                <button
+                  type="button"
+                  onClick={() => setIsAddProductOpen(false)}
+                  className="px-4 py-2 border rounded-xl text-xs font-semibold text-slate-600 hover:bg-slate-50"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  className="px-5 py-2 bg-[#142B70] text-white rounded-xl text-xs font-bold hover:bg-[#1E3A8A]"
+                >
+                  Save Product
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* MODAL: ADD HERO SLIDE */}
+      {isAddHeroOpen && (
+        <div className="fixed inset-0 z-50 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4">
+          <div className="bg-white rounded-2xl max-w-lg w-full p-6 space-y-4 shadow-2xl animate-in zoom-in-95">
+            <div className="flex items-center justify-between border-b pb-3">
+              <h3 className="text-base font-black text-slate-900">Add Hero Banner Slide</h3>
+              <button onClick={() => setIsAddHeroOpen(false)} className="text-slate-400 hover:text-slate-600">✕</button>
+            </div>
+
+            <form onSubmit={handleCreateHero} className="space-y-3.5">
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-xs font-bold text-slate-700 mb-1">Headline 1</label>
+                  <input
+                    type="text"
+                    required
+                    value={newHero.title1}
+                    onChange={(e) => setNewHero({ ...newHero, title1: e.target.value })}
+                    className="w-full px-3.5 py-2 border rounded-xl text-xs sm:text-sm outline-none"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-bold text-slate-700 mb-1">Headline 2</label>
+                  <input
+                    type="text"
+                    required
+                    value={newHero.title2}
+                    onChange={(e) => setNewHero({ ...newHero, title2: e.target.value })}
+                    className="w-full px-3.5 py-2 border rounded-xl text-xs sm:text-sm outline-none"
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-xs font-bold text-slate-700 mb-1">Description</label>
+                <textarea
+                  rows={2}
+                  value={newHero.description}
+                  onChange={(e) => setNewHero({ ...newHero, description: e.target.value })}
+                  className="w-full px-3.5 py-2 border rounded-xl text-xs sm:text-sm outline-none"
+                />
+              </div>
+
+              <div className="pt-2 flex justify-end gap-3">
+                <button
+                  type="button"
+                  onClick={() => setIsAddHeroOpen(false)}
+                  className="px-4 py-2 border rounded-xl text-xs font-semibold text-slate-600 hover:bg-slate-50"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  className="px-5 py-2 bg-[#142B70] text-white rounded-xl text-xs font-bold hover:bg-[#1E3A8A]"
+                >
+                  Save Hero Slide
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* MODAL: ADD ANNOUNCEMENT */}
+      {isAddAnnOpen && (
+        <div className="fixed inset-0 z-50 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4">
+          <div className="bg-white rounded-2xl max-w-md w-full p-6 space-y-4 shadow-2xl animate-in zoom-in-95">
+            <div className="flex items-center justify-between border-b pb-3">
+              <h3 className="text-base font-black text-slate-900">Add Announcement Notice</h3>
+              <button onClick={() => setIsAddAnnOpen(false)} className="text-slate-400 hover:text-slate-600">✕</button>
+            </div>
+
+            <form onSubmit={handleAddAnnouncement} className="space-y-3.5">
+              <div>
+                <label className="block text-xs font-bold text-slate-700 mb-1">Notice Text</label>
+                <input
+                  type="text"
+                  required
+                  value={newAnn.text}
+                  onChange={(e) => setNewAnn({ ...newAnn, text: e.target.value })}
+                  className="w-full px-3.5 py-2 border rounded-xl text-xs sm:text-sm outline-none"
+                />
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-xs font-bold text-slate-700 mb-1">Button Text</label>
+                  <input
+                    type="text"
+                    required
+                    value={newAnn.cta}
+                    onChange={(e) => setNewAnn({ ...newAnn, cta: e.target.value })}
+                    className="w-full px-3.5 py-2 border rounded-xl text-xs sm:text-sm outline-none"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-bold text-slate-700 mb-1">Target Link</label>
+                  <input
+                    type="text"
+                    required
+                    value={newAnn.link}
+                    onChange={(e) => setNewAnn({ ...newAnn, link: e.target.value })}
+                    className="w-full px-3.5 py-2 border rounded-xl text-xs sm:text-sm outline-none"
+                  />
+                </div>
+              </div>
+
+              <div className="pt-2 flex justify-end gap-3">
+                <button
+                  type="button"
+                  onClick={() => setIsAddAnnOpen(false)}
+                  className="px-4 py-2 border rounded-xl text-xs font-semibold text-slate-600 hover:bg-slate-50"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  className="px-5 py-2 bg-[#142B70] text-white rounded-xl text-xs font-bold hover:bg-[#1E3A8A]"
+                >
+                  Save Notice
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* MODAL: ADD CATEGORY */}
+      {isAddCatOpen && (
+        <div className="fixed inset-0 z-50 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4">
+          <div className="bg-white rounded-2xl max-w-md w-full p-6 space-y-4 shadow-2xl animate-in zoom-in-95">
+            <div className="flex items-center justify-between border-b pb-3">
+              <h3 className="text-base font-black text-slate-900">Add Store Category</h3>
+              <button onClick={() => setIsAddCatOpen(false)} className="text-slate-400 hover:text-slate-600">✕</button>
+            </div>
+
+            <form onSubmit={handleCreateCategory} className="space-y-3.5">
+              <div>
+                <label className="block text-xs font-bold text-slate-700 mb-1">Category Name</label>
+                <input
+                  type="text"
+                  required
+                  value={newCat.name}
+                  onChange={(e) => setNewCat({ ...newCat, name: e.target.value })}
+                  className="w-full px-3.5 py-2 border rounded-xl text-xs sm:text-sm outline-none"
+                />
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-xs font-bold text-slate-700 mb-1">Item Count</label>
+                  <input
+                    type="number"
+                    value={newCat.itemCount}
+                    onChange={(e) => setNewCat({ ...newCat, itemCount: e.target.value })}
+                    className="w-full px-3.5 py-2 border rounded-xl text-xs sm:text-sm outline-none"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-bold text-slate-700 mb-1">Image URL</label>
+                  <input
+                    type="text"
+                    value={newCat.image}
+                    onChange={(e) => setNewCat({ ...newCat, image: e.target.value })}
+                    className="w-full px-3.5 py-2 border rounded-xl text-xs sm:text-sm outline-none"
+                  />
+                </div>
+              </div>
+
+              <div className="pt-2 flex justify-end gap-3">
+                <button
+                  type="button"
+                  onClick={() => setIsAddCatOpen(false)}
+                  className="px-4 py-2 border rounded-xl text-xs font-semibold text-slate-600 hover:bg-slate-50"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  className="px-5 py-2 bg-[#142B70] text-white rounded-xl text-xs font-bold hover:bg-[#1E3A8A]"
+                >
+                  Save Category
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* MODAL: ADD TESTIMONIAL */}
+      {isAddTestOpen && (
+        <div className="fixed inset-0 z-50 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4">
+          <div className="bg-white rounded-2xl max-w-md w-full p-6 space-y-4 shadow-2xl animate-in zoom-in-95">
+            <div className="flex items-center justify-between border-b pb-3">
+              <h3 className="text-base font-black text-slate-900">Add Testimonial</h3>
+              <button onClick={() => setIsAddTestOpen(false)} className="text-slate-400 hover:text-slate-600">✕</button>
+            </div>
+
+            <form onSubmit={handleCreateTestimonial} className="space-y-3.5">
+              <div>
+                <label className="block text-xs font-bold text-slate-700 mb-1">Name</label>
+                <input
+                  type="text"
+                  required
+                  value={newTest.name}
+                  onChange={(e) => setNewTest({ ...newTest, name: e.target.value })}
+                  className="w-full px-3.5 py-2 border rounded-xl text-xs sm:text-sm outline-none"
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-bold text-slate-700 mb-1">Role / Salon</label>
+                <input
+                  type="text"
+                  value={newTest.role}
+                  onChange={(e) => setNewTest({ ...newTest, role: e.target.value })}
+                  className="w-full px-3.5 py-2 border rounded-xl text-xs sm:text-sm outline-none"
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-bold text-slate-700 mb-1">Review</label>
+                <textarea
+                  rows={2}
+                  required
+                  value={newTest.review}
+                  onChange={(e) => setNewTest({ ...newTest, review: e.target.value })}
+                  className="w-full px-3.5 py-2 border rounded-xl text-xs sm:text-sm outline-none"
+                />
+              </div>
+
+              <div className="pt-2 flex justify-end gap-3">
+                <button
+                  type="button"
+                  onClick={() => setIsAddTestOpen(false)}
+                  className="px-4 py-2 border rounded-xl text-xs font-semibold text-slate-600 hover:bg-slate-50"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  className="px-5 py-2 bg-[#142B70] text-white rounded-xl text-xs font-bold hover:bg-[#1E3A8A]"
+                >
+                  Save Review
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* MODAL: ADD FAQ */}
+      {isAddFaqOpen && (
+        <div className="fixed inset-0 z-50 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4">
+          <div className="bg-white rounded-2xl max-w-md w-full p-6 space-y-4 shadow-2xl animate-in zoom-in-95">
+            <div className="flex items-center justify-between border-b pb-3">
+              <h3 className="text-base font-black text-slate-900">Add FAQ Item</h3>
+              <button onClick={() => setIsAddFaqOpen(false)} className="text-slate-400 hover:text-slate-600">✕</button>
+            </div>
+
+            <form onSubmit={handleCreateFaq} className="space-y-3.5">
+              <div>
+                <label className="block text-xs font-bold text-slate-700 mb-1">Question</label>
+                <input
+                  type="text"
+                  required
+                  value={newFaq.question}
+                  onChange={(e) => setNewFaq({ ...newFaq, question: e.target.value })}
+                  className="w-full px-3.5 py-2 border rounded-xl text-xs sm:text-sm outline-none"
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-bold text-slate-700 mb-1">Answer</label>
+                <textarea
+                  rows={3}
+                  required
+                  value={newFaq.answer}
+                  onChange={(e) => setNewFaq({ ...newFaq, answer: e.target.value })}
+                  className="w-full px-3.5 py-2 border rounded-xl text-xs sm:text-sm outline-none"
+                />
+              </div>
+
+              <div className="pt-2 flex justify-end gap-3">
+                <button
+                  type="button"
+                  onClick={() => setIsAddFaqOpen(false)}
+                  className="px-4 py-2 border rounded-xl text-xs font-semibold text-slate-600 hover:bg-slate-50"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  className="px-5 py-2 bg-[#142B70] text-white rounded-xl text-xs font-bold hover:bg-[#1E3A8A]"
+                >
+                  Save FAQ
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* MODAL: ADD COUPON */}
+      {isAddCouponOpen && (
+        <div className="fixed inset-0 z-50 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4">
+          <div className="bg-white rounded-2xl max-w-md w-full p-6 space-y-4 shadow-2xl animate-in zoom-in-95">
+            <div className="flex items-center justify-between border-b pb-3">
+              <h3 className="text-base font-black text-slate-900">Create Discount Coupon</h3>
+              <button onClick={() => setIsAddCouponOpen(false)} className="text-slate-400 hover:text-slate-600">✕</button>
+            </div>
+
+            <form onSubmit={handleCreateCoupon} className="space-y-3.5">
+              <div>
+                <label className="block text-xs font-bold text-slate-700 mb-1">Coupon Promo Code</label>
+                <input
+                  type="text"
+                  required
+                  value={newCoupon.code}
+                  onChange={(e) => setNewCoupon({ ...newCoupon, code: e.target.value })}
+                  className="w-full px-3.5 py-2 border rounded-xl text-xs sm:text-sm outline-none uppercase font-mono"
+                />
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-xs font-bold text-slate-700 mb-1">Type</label>
+                  <select
+                    value={newCoupon.discountType}
+                    onChange={(e) => setNewCoupon({ ...newCoupon, discountType: e.target.value as any })}
+                    className="w-full px-3.5 py-2 border rounded-xl text-xs sm:text-sm outline-none bg-white"
+                  >
+                    <option value="percentage">% Percentage</option>
+                    <option value="flat">₹ Flat Off</option>
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-xs font-bold text-slate-700 mb-1">Value</label>
+                  <input
+                    type="number"
+                    required
+                    value={newCoupon.discountValue}
+                    onChange={(e) => setNewCoupon({ ...newCoupon, discountValue: e.target.value })}
+                    className="w-full px-3.5 py-2 border rounded-xl text-xs sm:text-sm outline-none"
+                  />
+                </div>
+              </div>
+
+              <div className="pt-2 flex justify-end gap-3">
+                <button
+                  type="button"
+                  onClick={() => setIsAddCouponOpen(false)}
+                  className="px-4 py-2 border rounded-xl text-xs font-semibold text-slate-600 hover:bg-slate-50"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  className="px-5 py-2 bg-[#142B70] text-white rounded-xl text-xs font-bold hover:bg-[#1E3A8A]"
+                >
+                  Create Coupon
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
