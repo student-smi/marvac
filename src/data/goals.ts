@@ -15,7 +15,7 @@ export const hairGoals: HairGoal[] = [
     title: "GLASS GLOW & RADIANCE",
     tagline: "Dewy, luminous finish with micro-reflecting radiance",
     badge: "HYDRATION",
-    image: "/images/cat_products.png",
+    image: "/images/goal_glass_glow.jpg",
     filterKey: "shine",
   },
   {
@@ -24,7 +24,7 @@ export const hairGoals: HairGoal[] = [
     title: "24-HOUR SALON HOLD",
     tagline: "Unshakeable micro-polymer lock with zero flaking",
     badge: "HOLD",
-    image: "/images/process_05_hspray.png",
+    image: "/images/goal_salon_hold.jpg",
     filterKey: "hold",
   },
   {
@@ -33,7 +33,7 @@ export const hairGoals: HairGoal[] = [
     title: "ROOT LIFT & VOLUME",
     tagline: "Instant density and matte texture at the crown",
     badge: "VOLUME",
-    image: "/images/process_01_volumizer.png",
+    image: "/images/goal_root_volume.jpg",
     filterKey: "volume",
   },
   {
@@ -42,7 +42,7 @@ export const hairGoals: HairGoal[] = [
     title: "ANTI-FRIZZ SHIELD",
     tagline: "Tested across 85% monsoon humidity without curling",
     badge: "SMOOTHNESS",
-    image: "/images/cat_style_acc.png",
+    image: "/images/goal_anti_frizz.jpg",
     filterKey: "smoothness",
   },
   {
@@ -51,7 +51,7 @@ export const hairGoals: HairGoal[] = [
     title: "BRIDAL UPDO SECURITY",
     tagline: "Reinforced support for heavy floral veils and buns",
     badge: "BRIDAL PRO",
-    image: "/images/kit_bridal.jpg",
+    image: "/images/goal_bridal_updo.jpg",
     filterKey: "styling",
   },
   {
@@ -60,7 +60,7 @@ export const hairGoals: HairGoal[] = [
     title: "DAILY EFFORTLESS FINISH",
     tagline: "Natural bounce and satin softness in under 2 minutes",
     badge: "DAILY ESSENTIAL",
-    image: "/images/combo_podium_999.png",
+    image: "/images/goal_daily_finish.jpg",
     filterKey: "finishing",
   },
 ];
