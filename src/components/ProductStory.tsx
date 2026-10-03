@@ -39,13 +39,27 @@ export default function ProductStory() {
               {/* Product Image Column */}
               <div className={`lg:col-span-6 relative ${isEven ? "order-1" : "order-1 lg:order-2"}`}>
                 <div className="relative aspect-[4/3] sm:aspect-[16/11] rounded-3xl overflow-hidden bg-gradient-to-tr from-[#EAF3FF] to-white border border-[#E5E7EB] shadow-md p-6 flex items-center justify-center">
-                  <Image
-                    src={story.image || "/images/combo_podium_1999.png"}
-                    alt={story.title}
-                    fill
-                    className="object-contain p-4"
-                    sizes="(max-width: 1024px) 100vw, 600px"
-                  />
+                  {(story.image || "").endsWith(".mp4") ||
+                  (story.image || "").endsWith(".webm") ||
+                  (story.image || "").startsWith("data:video") ? (
+                    <video
+                      src={story.image}
+                      autoPlay
+                      loop
+                      muted
+                      playsInline
+                      controls={false}
+                      className="w-full h-full object-cover rounded-2xl"
+                    />
+                  ) : (
+                    <Image
+                      src={story.image || "/images/combo_podium_1999.png"}
+                      alt={story.title}
+                      fill
+                      className="object-contain p-4"
+                      sizes="(max-width: 1024px) 100vw, 600px"
+                    />
+                  )}
 
                   {/* Floating Information Badge */}
                   {(story.floatingBadgeTitle || story.floatingBadgeDesc) && (

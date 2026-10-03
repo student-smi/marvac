@@ -140,15 +140,29 @@ export default function HeroCarousel() {
                 transition={{ duration: 0.4 }}
                 className="relative w-full max-w-[580px] aspect-[4/3] sm:aspect-[16/11] flex items-center justify-center p-4 z-10"
               >
-                <Image
-                  src={camp.image}
-                  alt={camp.title1}
-                  fill
-                  priority
-                  loading="eager"
-                  className="object-contain drop-shadow-2xl"
-                  sizes="(max-width: 768px) 100vw, 580px"
-                />
+                {(camp.image || "").endsWith(".mp4") ||
+                (camp.image || "").endsWith(".webm") ||
+                (camp.image || "").startsWith("data:video") ? (
+                  <video
+                    src={camp.image}
+                    autoPlay
+                    loop
+                    muted
+                    playsInline
+                    controls={false}
+                    className="w-full h-full object-contain rounded-2xl drop-shadow-2xl"
+                  />
+                ) : (
+                  <Image
+                    src={camp.image}
+                    alt={camp.title1}
+                    fill
+                    priority
+                    loading="eager"
+                    className="object-contain drop-shadow-2xl"
+                    sizes="(max-width: 768px) 100vw, 580px"
+                  />
+                )}
               </motion.div>
             </AnimatePresence>
           </div>

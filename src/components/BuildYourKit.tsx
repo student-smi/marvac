@@ -135,13 +135,27 @@ export default function BuildYourKit() {
               <div>
                 {/* Kit Image */}
                 <div className="relative w-full aspect-[4/3] rounded-2xl overflow-hidden bg-gradient-to-b from-[#EAF3FF] to-white p-3 mb-4">
-                  <Image
-                    src={kit.image}
-                    alt={kit.name}
-                    fill
-                    className="object-contain p-2 group-hover:scale-105 transition-transform duration-500"
-                    sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw"
-                  />
+                  {(kit.image || "").endsWith(".mp4") ||
+                  (kit.image || "").endsWith(".webm") ||
+                  (kit.image || "").startsWith("data:video") ? (
+                    <video
+                      src={kit.image}
+                      autoPlay
+                      loop
+                      muted
+                      playsInline
+                      controls={false}
+                      className="w-full h-full object-contain p-1"
+                    />
+                  ) : (
+                    <Image
+                      src={kit.image}
+                      alt={kit.name}
+                      fill
+                      className="object-contain p-2 group-hover:scale-105 transition-transform duration-500"
+                      sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw"
+                    />
+                  )}
                   <span className="absolute top-2.5 right-2.5 bg-[#142B70] text-white text-[9px] font-black px-2.5 py-0.5 rounded-full uppercase tracking-wider">
                     {kit.badge}
                   </span>
@@ -197,16 +211,16 @@ export default function BuildYourKit() {
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               onClick={() => setSelectedKit(null)}
-              className="fixed inset-0 bg-black/60 backdrop-blur-xs z-50 flex items-center justify-center p-4"
+              className="fixed inset-0 bg-black/60 backdrop-blur-xs z-50 flex items-center justify-center p-3 sm:p-4"
             />
             <motion.div
               initial={{ opacity: 0, scale: 0.95, y: 20 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.95, y: 20 }}
-              className="fixed inset-x-4 max-w-2xl mx-auto top-[8%] sm:top-[12%] bg-white rounded-3xl shadow-2xl z-50 overflow-hidden flex flex-col max-h-[85vh] border border-[#E5E7EB]"
+              className="fixed inset-x-3 sm:inset-x-4 max-w-2xl mx-auto top-[4%] sm:top-[8%] bg-white rounded-2xl sm:rounded-3xl shadow-2xl z-50 overflow-hidden flex flex-col max-h-[92vh] sm:max-h-[85vh] border border-[#E5E7EB]"
             >
               {/* Modal Header */}
-              <div className="p-5 border-b border-[#E5E7EB] flex items-center justify-between bg-[#EAF3FF]/40">
+              <div className="p-4 sm:p-5 border-b border-[#E5E7EB] flex items-center justify-between bg-[#EAF3FF]/40">
                 <div className="flex items-center gap-3">
                   <div className="w-9 h-9 rounded-full bg-[#142B70] text-white flex items-center justify-center shadow-xs">
                     <Sparkles className="w-4 h-4" />

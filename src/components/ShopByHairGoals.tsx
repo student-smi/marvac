@@ -57,13 +57,27 @@ export default function ShopByHairGoals() {
                 }`}
               >
                 <div className="relative w-full aspect-[4/3] bg-gray-50 overflow-hidden">
-                  <Image
-                    src={goal.image}
-                    alt={goal.name}
-                    fill
-                    className="object-cover group-hover:scale-105 transition-transform duration-500"
-                    sizes="300px"
-                  />
+                  {(goal.image || "").endsWith(".mp4") ||
+                  (goal.image || "").endsWith(".webm") ||
+                  (goal.image || "").startsWith("data:video") ? (
+                    <video
+                      src={goal.image}
+                      autoPlay
+                      loop
+                      muted
+                      playsInline
+                      controls={false}
+                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                    />
+                  ) : (
+                    <Image
+                      src={goal.image}
+                      alt={goal.name}
+                      fill
+                      className="object-cover group-hover:scale-105 transition-transform duration-500"
+                      sizes="300px"
+                    />
+                  )}
                   <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-60" />
 
                   {isSelected && (
@@ -103,13 +117,27 @@ export default function ShopByHairGoals() {
                 }`}
               >
                 <div className="relative w-full aspect-[4/3] bg-gray-50 overflow-hidden">
-                  <Image
-                    src={goal.image}
-                    alt={goal.name}
-                    fill
-                    className="object-cover group-hover:scale-105 transition-transform duration-500"
-                    sizes="300px"
-                  />
+                  {(goal.image || "").endsWith(".mp4") ||
+                  (goal.image || "").endsWith(".webm") ||
+                  (goal.image || "").startsWith("data:video") ? (
+                    <video
+                      src={goal.image}
+                      autoPlay
+                      loop
+                      muted
+                      playsInline
+                      controls={false}
+                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                    />
+                  ) : (
+                    <Image
+                      src={goal.image}
+                      alt={goal.name}
+                      fill
+                      className="object-cover group-hover:scale-105 transition-transform duration-500"
+                      sizes="300px"
+                    />
+                  )}
                   <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-60" />
 
                   {isSelected && (

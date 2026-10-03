@@ -119,14 +119,28 @@ function ProductDetailContent({ product }: { product: Product }) {
             {/* Main Image Box */}
             <div className="relative flex-1 aspect-square rounded-3xl bg-gradient-to-b from-[#edf6fc] via-[#f5faff] to-[#e6f3fc] border border-sky-100/80 p-6 flex items-center justify-center overflow-hidden">
               <div className="relative w-full h-full">
-                <Image
-                  src={selectedImage}
-                  alt={product.title}
-                  fill
-                  priority
-                  className="object-contain drop-shadow-xl"
-                  sizes="(max-width: 1024px) 100vw, 600px"
-                />
+                {(selectedImage || "").endsWith(".mp4") ||
+                (selectedImage || "").endsWith(".webm") ||
+                (selectedImage || "").startsWith("data:video") ? (
+                  <video
+                    src={selectedImage}
+                    autoPlay
+                    loop
+                    muted
+                    playsInline
+                    controls
+                    className="w-full h-full object-contain rounded-2xl drop-shadow-xl"
+                  />
+                ) : (
+                  <Image
+                    src={selectedImage}
+                    alt={product.title}
+                    fill
+                    priority
+                    className="object-contain drop-shadow-xl"
+                    sizes="(max-width: 1024px) 100vw, 600px"
+                  />
+                )}
               </div>
 
               {product.badge && (

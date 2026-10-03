@@ -51,13 +51,27 @@ export default function ShopTheStories() {
               className="group cursor-pointer flex-none w-[180px] sm:w-[230px] flex flex-col bg-white rounded-2xl overflow-hidden border border-[#E5E7EB] hover:border-[#2445A8]/30 shadow-xs hover:shadow-xl transition-all duration-300 hover:-translate-y-1 whitespace-normal select-none"
             >
               <div className="relative aspect-[9/14] w-full overflow-hidden bg-black">
-                <Image
-                  src={story.image || story.coverImage || "/images/hero_podium.png"}
-                  alt={story.title}
-                  fill
-                  className="object-cover group-hover:scale-105 transition-transform duration-500"
-                  sizes="230px"
-                />
+                {(story.image || story.coverImage || "").endsWith(".mp4") ||
+                (story.image || story.coverImage || "").endsWith(".webm") ||
+                (story.image || story.coverImage || "").startsWith("data:video") ? (
+                  <video
+                    src={story.image || story.coverImage}
+                    autoPlay
+                    loop
+                    muted
+                    playsInline
+                    controls={false}
+                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                  />
+                ) : (
+                  <Image
+                    src={story.image || story.coverImage || "/images/hero_podium.png"}
+                    alt={story.title}
+                    fill
+                    className="object-cover group-hover:scale-105 transition-transform duration-500"
+                    sizes="230px"
+                  />
+                )}
 
                 <div className="absolute top-2.5 right-2.5 bg-black/60 backdrop-blur-xs text-white text-[10px] font-bold px-2 py-0.5 rounded-full flex items-center gap-1 shadow-xs">
                   <Eye className="w-3 h-3 text-sky-300" />
@@ -98,7 +112,7 @@ export default function ShopTheStories() {
             </div>
           ))}
 
-          {/* Duplicated loop for infinite unbroken movement */}
+          {/* Second loop */}
           {list.map((story, idx) => (
             <div
               key={`story-2-${story.id}-${idx}`}
@@ -106,13 +120,27 @@ export default function ShopTheStories() {
               className="group cursor-pointer flex-none w-[180px] sm:w-[230px] flex flex-col bg-white rounded-2xl overflow-hidden border border-[#E5E7EB] hover:border-[#2445A8]/30 shadow-xs hover:shadow-xl transition-all duration-300 hover:-translate-y-1 whitespace-normal select-none"
             >
               <div className="relative aspect-[9/14] w-full overflow-hidden bg-black">
-                <Image
-                  src={story.image || story.coverImage || "/images/hero_podium.png"}
-                  alt={story.title}
-                  fill
-                  className="object-cover group-hover:scale-105 transition-transform duration-500"
-                  sizes="230px"
-                />
+                {(story.image || story.coverImage || "").endsWith(".mp4") ||
+                (story.image || story.coverImage || "").endsWith(".webm") ||
+                (story.image || story.coverImage || "").startsWith("data:video") ? (
+                  <video
+                    src={story.image || story.coverImage}
+                    autoPlay
+                    loop
+                    muted
+                    playsInline
+                    controls={false}
+                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                  />
+                ) : (
+                  <Image
+                    src={story.image || story.coverImage || "/images/hero_podium.png"}
+                    alt={story.title}
+                    fill
+                    className="object-cover group-hover:scale-105 transition-transform duration-500"
+                    sizes="230px"
+                  />
+                )}
 
                 <div className="absolute top-2.5 right-2.5 bg-black/60 backdrop-blur-xs text-white text-[10px] font-bold px-2 py-0.5 rounded-full flex items-center gap-1 shadow-xs">
                   <Eye className="w-3 h-3 text-sky-300" />
@@ -190,12 +218,26 @@ export default function ShopTheStories() {
               </div>
 
               <div className="absolute inset-0">
-                <Image
-                  src={activeStory.image || activeStory.coverImage || "/images/hero_podium.png"}
-                  alt={activeStory.title}
-                  fill
-                  className="object-cover"
-                />
+                {(activeStory.image || activeStory.coverImage || "").endsWith(".mp4") ||
+                (activeStory.image || activeStory.coverImage || "").endsWith(".webm") ||
+                (activeStory.image || activeStory.coverImage || "").startsWith("data:video") ? (
+                  <video
+                    src={activeStory.image || activeStory.coverImage}
+                    autoPlay
+                    loop
+                    muted
+                    playsInline
+                    controls
+                    className="w-full h-full object-cover"
+                  />
+                ) : (
+                  <Image
+                    src={activeStory.image || activeStory.coverImage || "/images/hero_podium.png"}
+                    alt={activeStory.title}
+                    fill
+                    className="object-cover"
+                  />
+                )}
               </div>
 
               <div className="p-4 z-10 bg-gradient-to-t from-black via-black/80 to-transparent pt-10">

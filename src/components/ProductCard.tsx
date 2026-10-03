@@ -44,13 +44,27 @@ export default function ProductCard({ product, className = "" }: ProductCardProp
         className="relative w-full aspect-square rounded-xl overflow-hidden bg-gradient-to-b from-[#EAF3FF]/40 to-[#EAF3FF]/15 flex items-center justify-center p-3 mb-2.5"
       >
         <div className="relative w-full h-full flex items-center justify-center">
-          <Image
-            src={isHovered && product.hoverImage ? product.hoverImage : product.image}
-            alt={product.title}
-            fill
-            sizes="(max-width: 640px) 48vw, (max-width: 1024px) 30vw, 22vw"
-            className="object-contain p-1.5 transition-transform duration-500 ease-out group-hover:scale-105"
-          />
+          {((isHovered && product.hoverImage ? product.hoverImage : product.image) || "").endsWith(".mp4") ||
+          ((isHovered && product.hoverImage ? product.hoverImage : product.image) || "").endsWith(".webm") ||
+          ((isHovered && product.hoverImage ? product.hoverImage : product.image) || "").startsWith("data:video") ? (
+            <video
+              src={isHovered && product.hoverImage ? product.hoverImage : product.image}
+              autoPlay
+              loop
+              muted
+              playsInline
+              controls={false}
+              className="w-full h-full object-contain p-1 transition-transform duration-500 ease-out group-hover:scale-105"
+            />
+          ) : (
+            <Image
+              src={isHovered && product.hoverImage ? product.hoverImage : product.image}
+              alt={product.title}
+              fill
+              sizes="(max-width: 640px) 48vw, (max-width: 1024px) 30vw, 22vw"
+              className="object-contain p-1.5 transition-transform duration-500 ease-out group-hover:scale-105"
+            />
+          )}
         </div>
 
         {/* Top-Right Badge */}
