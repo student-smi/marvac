@@ -38,6 +38,7 @@ import {
   Video,
   Landmark,
   RotateCcw,
+  UploadCloud,
 } from "lucide-react";
 import AuraLogo from "@/components/AuraLogo";
 import { Order, Coupon, HeroCampaign, AnnouncementItem, BrandSettings } from "@/lib/store";
@@ -49,6 +50,151 @@ import { ProcessStep } from "@/data/process";
 import { StoryReel } from "@/data/stories";
 import { ExhibitionItem } from "@/data/exhibitions";
 import { ProductStoryItem } from "@/data/productStory";
+
+const compressImageFile = (file: File): Promise<string> => {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      const img = new window.Image();
+      img.onload = () => {
+        const canvas = document.createElement("canvas");
+        const MAX_DIM = 1200;
+        let width = img.width;
+        let height = img.height;
+        if (width > height) {
+          if (width > MAX_DIM) {
+            height = Math.round((height * MAX_DIM) / width);
+            width = MAX_DIM;
+          }
+        } else {
+          if (height > MAX_DIM) {
+            width = Math.round((width * MAX_DIM) / height);
+            height = MAX_DIM;
+          }
+        }
+        canvas.width = width;
+        canvas.height = height;
+        const ctx = canvas.getContext("2d");
+        if (ctx) {
+          ctx.drawImage(img, 0, 0, width, height);
+          const dataUrl = canvas.toDataURL("image/webp", 0.85);
+          resolve(dataUrl);
+        } else {
+          resolve(e.target?.result as string);
+        }
+      };
+      img.onerror = () => resolve(e.target?.result as string);
+      img.src = e.target?.result as string;
+    };
+    reader.onerror = (err) => reject(err);
+    reader.readAsDataURL(file);
+  });
+};
+
+function ImageUploadField({
+  label = "Upload Image",
+  value,
+  onChange,
+  aspectHint,
+}: {
+  label?: string;
+  value: string;
+  onChange: (val: string) => void;
+  aspectHint?: string;
+}) {
+  const [isUrlMode, setIsUrlMode] = useState(false);
+  const [isUploading, setIsUploading] = useState(false);
+  const fileInputRef = React.useRef<HTMLInputElement | null>(null);
+
+  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    try {
+      setIsUploading(true);
+      const dataUrl = await compressImageFile(file);
+      onChange(dataUrl);
+    } catch {
+      alert("Error reading image file");
+    } finally {
+      setIsUploading(false);
+      if (fileInputRef.current) fileInputRef.current.value = "";
+    }
+  };
+
+  const inputId = `file-input-${label.toLowerCase().replace(/[^a-z0-9]/g, "-")}`;
+
+  return (
+    <div className="space-y-1.5">
+      <div className="flex items-center justify-between">
+        <label className="block text-xs font-bold text-slate-700">
+          {label} {aspectHint && <span className="text-[10px] text-slate-400 font-normal">({aspectHint})</span>}
+        </label>
+        <button
+          type="button"
+          onClick={() => setIsUrlMode(!isUrlMode)}
+          className="text-[11px] text-blue-600 hover:text-blue-800 font-semibold underline"
+        >
+          {isUrlMode ? "Upload File from Device" : "or Paste Image URL"}
+        </button>
+      </div>
+
+      {isUrlMode ? (
+        <input
+          type="text"
+          placeholder="https://... or /images/..."
+          value={value}
+          onChange={(e) => onChange(e.target.value)}
+          className="w-full px-3.5 py-2 border rounded-xl text-xs sm:text-sm outline-none"
+        />
+      ) : (
+        <div className="flex items-center gap-3">
+          <input
+            ref={fileInputRef}
+            type="file"
+            accept="image/*"
+            onChange={handleFileChange}
+            className="hidden"
+            id={inputId}
+          />
+          <label
+            htmlFor={inputId}
+            className="flex-1 cursor-pointer border-2 border-dashed border-slate-300 hover:border-blue-500 hover:bg-blue-50/40 rounded-xl p-3 text-center transition-colors group"
+          >
+            <div className="flex items-center justify-center gap-2 text-xs font-bold text-slate-700 group-hover:text-blue-600">
+              <UploadCloud className="w-4 h-4 text-slate-400 group-hover:text-blue-500" />
+              <span>{isUploading ? "Processing & Compressing Image..." : "Choose Image from Device"}</span>
+            </div>
+            <p className="text-[10px] text-slate-400 mt-0.5">JPG, PNG, WEBP (Auto-optimized)</p>
+          </label>
+        </div>
+      )}
+
+      {/* Live Preview if value exists */}
+      {value && (
+        <div className="flex items-center gap-3 p-2 bg-slate-50 border border-slate-200 rounded-xl">
+          <div className="relative w-14 h-14 rounded-lg overflow-hidden border border-slate-200 bg-white shrink-0">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src={value} alt="Preview" className="w-full h-full object-cover" />
+          </div>
+          <div className="flex-1 min-w-0">
+            <p className="text-xs font-bold text-slate-700 truncate">Image Selected</p>
+            <p className="text-[10px] text-slate-400 truncate">
+              {value.startsWith("data:") ? "Uploaded from device" : value}
+            </p>
+          </div>
+          <button
+            type="button"
+            onClick={() => onChange("")}
+            className="p-1.5 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+            title="Remove Image"
+          >
+            <Trash2 className="w-3.5 h-3.5" />
+          </button>
+        </div>
+      )}
+    </div>
+  );
+}
 
 export default function AdminDashboardPage() {
   const [activeTab, setActiveTab] = useState<
@@ -2460,6 +2606,12 @@ export default function AdminDashboardPage() {
                 />
               </div>
 
+              <ImageUploadField
+                label="Step Product Image"
+                value={newProcess.image}
+                onChange={(val) => setNewProcess({ ...newProcess, image: val })}
+              />
+
               <div className="pt-2 flex justify-end gap-3">
                 <button
                   type="button"
@@ -2492,27 +2644,22 @@ export default function AdminDashboardPage() {
             </div>
 
             <form onSubmit={handleSaveProductStory} className="space-y-3.5">
-              <div className="grid grid-cols-2 gap-3">
-                <div>
-                  <label className="block text-xs font-bold text-slate-700 mb-1">Badge Tag</label>
-                  <input
-                    type="text"
-                    required
-                    value={newProductStory.badge}
-                    onChange={(e) => setNewProductStory({ ...newProductStory, badge: e.target.value })}
-                    className="w-full px-3.5 py-2 border rounded-xl text-xs sm:text-sm outline-none"
-                  />
-                </div>
-                <div>
-                  <label className="block text-xs font-bold text-slate-700 mb-1">Image URL</label>
-                  <input
-                    type="text"
-                    value={newProductStory.image}
-                    onChange={(e) => setNewProductStory({ ...newProductStory, image: e.target.value })}
-                    className="w-full px-3.5 py-2 border rounded-xl text-xs sm:text-sm outline-none"
-                  />
-                </div>
+              <div>
+                <label className="block text-xs font-bold text-slate-700 mb-1">Badge Tag</label>
+                <input
+                  type="text"
+                  required
+                  value={newProductStory.badge}
+                  onChange={(e) => setNewProductStory({ ...newProductStory, badge: e.target.value })}
+                  className="w-full px-3.5 py-2 border rounded-xl text-xs sm:text-sm outline-none"
+                />
               </div>
+
+              <ImageUploadField
+                label="Story Cover Image"
+                value={newProductStory.image}
+                onChange={(val) => setNewProductStory({ ...newProductStory, image: val })}
+              />
 
               <div>
                 <label className="block text-xs font-bold text-slate-700 mb-1">Story Headline</label>
@@ -2631,17 +2778,16 @@ export default function AdminDashboardPage() {
                 </div>
               </div>
 
-              <div>
-                <label className="block text-xs font-bold text-slate-700 mb-1">Product Name</label>
-                <input
-                  type="text"
-                  value={newReel.productName}
-                  onChange={(e) => setNewReel({ ...newReel, productName: e.target.value })}
-                  className="w-full px-3.5 py-2 border rounded-xl text-xs sm:text-sm outline-none"
-                />
-              </div>
-
               <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-xs font-bold text-slate-700 mb-1">Product Name</label>
+                  <input
+                    type="text"
+                    value={newReel.productName}
+                    onChange={(e) => setNewReel({ ...newReel, productName: e.target.value })}
+                    className="w-full px-3.5 py-2 border rounded-xl text-xs sm:text-sm outline-none"
+                  />
+                </div>
                 <div>
                   <label className="block text-xs font-bold text-slate-700 mb-1">Price (₹)</label>
                   <input
@@ -2651,16 +2797,13 @@ export default function AdminDashboardPage() {
                     className="w-full px-3.5 py-2 border rounded-xl text-xs sm:text-sm outline-none"
                   />
                 </div>
-                <div>
-                  <label className="block text-xs font-bold text-slate-700 mb-1">Thumbnail Image</label>
-                  <input
-                    type="text"
-                    value={newReel.image}
-                    onChange={(e) => setNewReel({ ...newReel, image: e.target.value })}
-                    className="w-full px-3.5 py-2 border rounded-xl text-xs sm:text-sm outline-none"
-                  />
-                </div>
               </div>
+
+              <ImageUploadField
+                label="Reel Thumbnail Image"
+                value={newReel.image}
+                onChange={(val) => setNewReel({ ...newReel, image: val })}
+              />
 
               <div className="pt-2 flex justify-end gap-3">
                 <button
@@ -2737,15 +2880,11 @@ export default function AdminDashboardPage() {
                 </div>
               </div>
 
-              <div>
-                <label className="block text-xs font-bold text-slate-700 mb-1">Image URL</label>
-                <input
-                  type="text"
-                  value={newEx.image}
-                  onChange={(e) => setNewEx({ ...newEx, image: e.target.value })}
-                  className="w-full px-3.5 py-2 border rounded-xl text-xs sm:text-sm outline-none"
-                />
-              </div>
+              <ImageUploadField
+                label="Exhibition Banner Image"
+                value={newEx.image}
+                onChange={(val) => setNewEx({ ...newEx, image: val })}
+              />
 
               <div className="pt-2 flex justify-end gap-3">
                 <button
@@ -2839,15 +2978,11 @@ export default function AdminDashboardPage() {
                 </div>
               </div>
 
-              <div>
-                <label className="block text-xs font-bold text-slate-700 mb-1">Image URL</label>
-                <input
-                  type="text"
-                  value={newProduct.image}
-                  onChange={(e) => setNewProduct({ ...newProduct, image: e.target.value })}
-                  className="w-full px-3.5 py-2 border rounded-xl text-xs sm:text-sm outline-none"
-                />
-              </div>
+              <ImageUploadField
+                label="Product Image"
+                value={newProduct.image}
+                onChange={(val) => setNewProduct({ ...newProduct, image: val })}
+              />
 
               <div className="flex items-center gap-2">
                 <input
@@ -2925,6 +3060,55 @@ export default function AdminDashboardPage() {
                   onChange={(e) => setNewHero({ ...newHero, description: e.target.value })}
                   className="w-full px-3.5 py-2 border rounded-xl text-xs sm:text-sm outline-none"
                 />
+              </div>
+
+              <ImageUploadField
+                label="Hero Banner Image"
+                value={newHero.image}
+                onChange={(val) => setNewHero({ ...newHero, image: val })}
+                aspectHint="Recommended 16:9 or 1920x1080"
+              />
+
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-xs font-bold text-slate-700 mb-1">Badge / Eyebrow</label>
+                  <input
+                    type="text"
+                    value={newHero.eyebrow}
+                    onChange={(e) => setNewHero({ ...newHero, eyebrow: e.target.value })}
+                    className="w-full px-3.5 py-2 border rounded-xl text-xs sm:text-sm outline-none"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-bold text-slate-700 mb-1">Offer Price (₹)</label>
+                  <input
+                    type="number"
+                    value={newHero.price}
+                    onChange={(e) => setNewHero({ ...newHero, price: e.target.value })}
+                    className="w-full px-3.5 py-2 border rounded-xl text-xs sm:text-sm outline-none"
+                  />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-xs font-bold text-slate-700 mb-1">Button Text</label>
+                  <input
+                    type="text"
+                    value={newHero.ctaText}
+                    onChange={(e) => setNewHero({ ...newHero, ctaText: e.target.value })}
+                    className="w-full px-3.5 py-2 border rounded-xl text-xs sm:text-sm outline-none"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-bold text-slate-700 mb-1">Button Link</label>
+                  <input
+                    type="text"
+                    value={newHero.ctaLink}
+                    onChange={(e) => setNewHero({ ...newHero, ctaLink: e.target.value })}
+                    className="w-full px-3.5 py-2 border rounded-xl text-xs sm:text-sm outline-none"
+                  />
+                </div>
               </div>
 
               <div className="pt-2 flex justify-end gap-3">
@@ -3036,26 +3220,21 @@ export default function AdminDashboardPage() {
                 />
               </div>
 
-              <div className="grid grid-cols-2 gap-3">
-                <div>
-                  <label className="block text-xs font-bold text-slate-700 mb-1">Item Count</label>
-                  <input
-                    type="number"
-                    value={newCat.itemCount}
-                    onChange={(e) => setNewCat({ ...newCat, itemCount: e.target.value })}
-                    className="w-full px-3.5 py-2 border rounded-xl text-xs sm:text-sm outline-none"
-                  />
-                </div>
-                <div>
-                  <label className="block text-xs font-bold text-slate-700 mb-1">Image URL</label>
-                  <input
-                    type="text"
-                    value={newCat.image}
-                    onChange={(e) => setNewCat({ ...newCat, image: e.target.value })}
-                    className="w-full px-3.5 py-2 border rounded-xl text-xs sm:text-sm outline-none"
-                  />
-                </div>
+              <div>
+                <label className="block text-xs font-bold text-slate-700 mb-1">Item Count</label>
+                <input
+                  type="number"
+                  value={newCat.itemCount}
+                  onChange={(e) => setNewCat({ ...newCat, itemCount: e.target.value })}
+                  className="w-full px-3.5 py-2 border rounded-xl text-xs sm:text-sm outline-none"
+                />
               </div>
+
+              <ImageUploadField
+                label="Category Cover Image"
+                value={newCat.image}
+                onChange={(val) => setNewCat({ ...newCat, image: val })}
+              />
 
               <div className="pt-2 flex justify-end gap-3">
                 <button
@@ -3109,6 +3288,12 @@ export default function AdminDashboardPage() {
                   className="w-full px-3.5 py-2 border rounded-xl text-xs sm:text-sm outline-none"
                 />
               </div>
+
+              <ImageUploadField
+                label="Client Photo / Avatar"
+                value={newTest.avatar}
+                onChange={(val) => setNewTest({ ...newTest, avatar: val })}
+              />
 
               <div>
                 <label className="block text-xs font-bold text-slate-700 mb-1">Review</label>
