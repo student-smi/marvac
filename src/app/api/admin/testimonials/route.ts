@@ -40,6 +40,26 @@ export async function POST(req: Request) {
   }
 }
 
+export async function PUT(req: Request) {
+  try {
+    const body = await req.json();
+    const { id, ...updates } = body;
+
+    if (!id) {
+      return NextResponse.json({ error: "Testimonial ID required" }, { status: 400 });
+    }
+
+    if (updates.rating !== undefined) updates.rating = Number(updates.rating);
+    if (updates.review) updates.comment = updates.review;
+    if (updates.comment) updates.review = updates.comment;
+
+    const updated = await store.updateTestimonial(id, updates);
+    return NextResponse.json({ success: true, testimonial: updated });
+  } catch (error: any) {
+    return NextResponse.json({ error: error.message || "Failed to update testimonial" }, { status: 500 });
+  }
+}
+
 export async function DELETE(req: Request) {
   try {
     const { searchParams } = new URL(req.url);

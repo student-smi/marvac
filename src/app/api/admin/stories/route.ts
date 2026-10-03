@@ -44,6 +44,37 @@ export async function POST(req: Request) {
   }
 }
 
+export async function PUT(req: Request) {
+  try {
+    const body = await req.json();
+    const { id, ...updates } = body;
+
+    if (!id) {
+      return NextResponse.json({ error: "Story ID required" }, { status: 400 });
+    }
+
+    if (updates.productPrice !== undefined) {
+      updates.productPrice = Number(updates.productPrice);
+      updates.taggedProductPrice = updates.productPrice;
+    }
+    if (updates.productOriginalPrice !== undefined) {
+      updates.productOriginalPrice = Number(updates.productOriginalPrice);
+    }
+    if (updates.productName !== undefined) {
+      updates.taggedProductTitle = updates.productName;
+    }
+    if (updates.image !== undefined) {
+      updates.coverImage = updates.image;
+      updates.taggedProductImage = updates.image;
+    }
+
+    const updated = await store.updateStoryReel(id, updates);
+    return NextResponse.json({ success: true, reel: updated });
+  } catch (error: any) {
+    return NextResponse.json({ error: error.message || "Failed to update story reel" }, { status: 500 });
+  }
+}
+
 export async function DELETE(req: Request) {
   try {
     const { searchParams } = new URL(req.url);

@@ -406,6 +406,15 @@ export const store = {
     return newTest;
   },
 
+  updateTestimonial: async (id: string, updates: Partial<Testimonial>): Promise<Testimonial | null> => {
+    const db = await readDbAsync();
+    const idx = db.testimonials.findIndex((t) => t.id === id);
+    if (idx === -1) return null;
+    db.testimonials[idx] = { ...db.testimonials[idx], ...updates };
+    await writeDbAsync(db);
+    return db.testimonials[idx];
+  },
+
   deleteTestimonial: async (id: string): Promise<boolean> => {
     const db = await readDbAsync();
     const prev = db.testimonials.length;
@@ -432,6 +441,15 @@ export const store = {
     db.faqs.push(newFaq);
     await writeDbAsync(db);
     return newFaq;
+  },
+
+  updateFaq: async (id: string, updates: Partial<FAQItem>): Promise<FAQItem | null> => {
+    const db = await readDbAsync();
+    const idx = db.faqs.findIndex((f) => f.id === id);
+    if (idx === -1) return null;
+    db.faqs[idx] = { ...db.faqs[idx], ...updates };
+    await writeDbAsync(db);
+    return db.faqs[idx];
   },
 
   deleteFaq: async (id: string): Promise<boolean> => {
@@ -504,6 +522,15 @@ export const store = {
     db.announcementItems.push(newItem);
     await writeDbAsync(db);
     return newItem;
+  },
+
+  updateAnnouncementItem: async (id: string, updates: Partial<AnnouncementItem>): Promise<AnnouncementItem | null> => {
+    const db = await readDbAsync();
+    const idx = db.announcementItems.findIndex((a) => a.id === id);
+    if (idx === -1) return null;
+    db.announcementItems[idx] = { ...db.announcementItems[idx], ...updates };
+    await writeDbAsync(db);
+    return db.announcementItems[idx];
   },
 
   deleteAnnouncementItem: async (id: string): Promise<boolean> => {
@@ -613,6 +640,15 @@ export const store = {
     return newReel;
   },
 
+  updateStoryReel: async (id: string, updates: Partial<StoryReel>): Promise<StoryReel | null> => {
+    const db = await readDbAsync();
+    const idx = db.storyReels.findIndex((r) => r.id === id);
+    if (idx === -1) return null;
+    db.storyReels[idx] = { ...db.storyReels[idx], ...updates };
+    await writeDbAsync(db);
+    return db.storyReels[idx];
+  },
+
   deleteStoryReel: async (id: string): Promise<boolean> => {
     const db = await readDbAsync();
     const prev = db.storyReels.length;
@@ -639,6 +675,15 @@ export const store = {
     db.exhibitions.unshift(newEx);
     await writeDbAsync(db);
     return newEx;
+  },
+
+  updateExhibition: async (id: string, updates: Partial<ExhibitionItem>): Promise<ExhibitionItem | null> => {
+    const db = await readDbAsync();
+    const idx = db.exhibitions.findIndex((e) => e.id === id);
+    if (idx === -1) return null;
+    db.exhibitions[idx] = { ...db.exhibitions[idx], ...updates };
+    await writeDbAsync(db);
+    return db.exhibitions[idx];
   },
 
   deleteExhibition: async (id: string): Promise<boolean> => {
@@ -710,6 +755,17 @@ export const store = {
     return db.orders[idx];
   },
 
+  deleteOrder: async (id: string): Promise<boolean> => {
+    const db = await readDbAsync();
+    const prev = db.orders.length;
+    db.orders = db.orders.filter((o) => o.id !== id && o.order_number !== id);
+    if (db.orders.length !== prev) {
+      await writeDbAsync(db);
+      return true;
+    }
+    return false;
+  },
+
   // Coupons
   getAllCoupons: async (): Promise<Coupon[]> => {
     const db = await readDbAsync();
@@ -721,6 +777,16 @@ export const store = {
     db.coupons.push(coupon);
     await writeDbAsync(db);
     return coupon;
+  },
+
+  updateCoupon: async (code: string, updates: Partial<Coupon>): Promise<Coupon | null> => {
+    const db = await readDbAsync();
+    const idx = db.coupons.findIndex((c) => c.code.toUpperCase() === code.toUpperCase());
+    if (idx === -1) return null;
+    db.coupons[idx] = { ...db.coupons[idx], ...updates };
+    if (updates.code) db.coupons[idx].code = updates.code.toUpperCase();
+    await writeDbAsync(db);
+    return db.coupons[idx];
   },
 
   deleteCoupon: async (code: string): Promise<boolean> => {

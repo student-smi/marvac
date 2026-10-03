@@ -33,6 +33,22 @@ export async function POST(req: Request) {
   }
 }
 
+export async function PUT(req: Request) {
+  try {
+    const body = await req.json();
+    const { id, ...updates } = body;
+
+    if (!id) {
+      return NextResponse.json({ error: "Exhibition ID is required" }, { status: 400 });
+    }
+
+    const updated = await store.updateExhibition(id, updates);
+    return NextResponse.json({ success: true, exhibition: updated });
+  } catch (error: any) {
+    return NextResponse.json({ error: error.message || "Failed to update exhibition" }, { status: 500 });
+  }
+}
+
 export async function DELETE(req: Request) {
   try {
     const { searchParams } = new URL(req.url);

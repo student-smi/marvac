@@ -26,3 +26,21 @@ export async function PATCH(req: Request) {
     return NextResponse.json({ error: "Failed to update order" }, { status: 500 });
   }
 }
+
+export async function DELETE(req: Request) {
+  try {
+    const { searchParams } = new URL(req.url);
+    const id = searchParams.get("id");
+
+    if (!id) {
+      return NextResponse.json({ error: "Order ID required" }, { status: 400 });
+    }
+
+    const deleted = await store.deleteOrder(id);
+    return NextResponse.json({ success: deleted });
+  } catch (error) {
+    console.error("Delete order error:", error);
+    return NextResponse.json({ error: "Failed to delete order" }, { status: 500 });
+  }
+}
+

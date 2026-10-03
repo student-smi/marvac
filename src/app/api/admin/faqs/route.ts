@@ -30,6 +30,22 @@ export async function POST(req: Request) {
   }
 }
 
+export async function PUT(req: Request) {
+  try {
+    const body = await req.json();
+    const { id, ...updates } = body;
+
+    if (!id) {
+      return NextResponse.json({ error: "FAQ ID is required" }, { status: 400 });
+    }
+
+    const updated = await store.updateFaq(id, updates);
+    return NextResponse.json({ success: true, faq: updated });
+  } catch (error: any) {
+    return NextResponse.json({ error: error.message || "Failed to update FAQ" }, { status: 500 });
+  }
+}
+
 export async function DELETE(req: Request) {
   try {
     const { searchParams } = new URL(req.url);

@@ -30,6 +30,11 @@ export async function POST(req: Request) {
       return NextResponse.json({ success: true, announcementItem: added });
     }
 
+    if (action === "updateAnnouncementItem" && body.id && body.updates) {
+      const updated = await store.updateAnnouncementItem(body.id, body.updates);
+      return NextResponse.json({ success: true, announcementItem: updated });
+    }
+
     if (action === "deleteAnnouncementItem" && deleteAnnouncementId) {
       const deleted = await store.deleteAnnouncementItem(deleteAnnouncementId);
       return NextResponse.json({ success: deleted });

@@ -49,6 +49,28 @@ export async function POST(req: Request) {
   }
 }
 
+export async function PUT(req: Request) {
+  try {
+    const body = await req.json();
+    const { id, ...updates } = body;
+
+    if (!id) {
+      return NextResponse.json({ error: "Product ID required" }, { status: 400 });
+    }
+
+    if (updates.price !== undefined) updates.price = Number(updates.price);
+    if (updates.originalPrice !== undefined) updates.originalPrice = Number(updates.originalPrice);
+    if (updates.rating !== undefined) updates.rating = Number(updates.rating);
+    if (updates.reviewsCount !== undefined) updates.reviewsCount = Number(updates.reviewsCount);
+
+    const updated = await store.updateProduct(id, updates);
+    return NextResponse.json({ success: true, product: updated });
+  } catch (error) {
+    console.error("Update product error:", error);
+    return NextResponse.json({ error: "Failed to update product" }, { status: 500 });
+  }
+}
+
 export async function DELETE(req: Request) {
   try {
     const { searchParams } = new URL(req.url);

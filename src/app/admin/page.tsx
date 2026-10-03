@@ -232,6 +232,303 @@ export default function AdminDashboardPage() {
     minOrderValue: "499",
   });
 
+  // Edit states for all sections (CRUD)
+  const [editingProduct, setEditingProduct] = useState<Product | null>(null);
+  const [editingHero, setEditingHero] = useState<HeroCampaign | null>(null);
+  const [editingAnn, setEditingAnn] = useState<AnnouncementItem | null>(null);
+  const [editingCat, setEditingCat] = useState<Category | null>(null);
+  const [editingProcessIndex, setEditingProcessIndex] = useState<number | null>(null);
+  const [editingProductStory, setEditingProductStory] = useState<ProductStoryItem | null>(null);
+  const [editingReel, setEditingReel] = useState<StoryReel | null>(null);
+  const [editingEx, setEditingEx] = useState<ExhibitionItem | null>(null);
+  const [editingTest, setEditingTest] = useState<Testimonial | null>(null);
+  const [editingFaq, setEditingFaq] = useState<FAQItem | null>(null);
+  const [editingCoupon, setEditingCoupon] = useState<Coupon | null>(null);
+
+  // Open Add / Edit Helpers
+  const handleOpenAddProduct = () => {
+    setEditingProduct(null);
+    setNewProduct({
+      title: "",
+      price: "",
+      originalPrice: "",
+      category: "Skin & Hair",
+      image: "/images/hero_podium.png",
+      description: "",
+      badge: "NEW",
+      isBestseller: false,
+    });
+    setIsAddProductOpen(true);
+  };
+  const handleOpenEditProduct = (prod: Product) => {
+    setEditingProduct(prod);
+    setNewProduct({
+      title: prod.title || "",
+      price: String(prod.price ?? ""),
+      originalPrice: String(prod.originalPrice ?? prod.price ?? ""),
+      category: prod.category || "Skin & Hair",
+      image: prod.image || "/images/hero_podium.png",
+      description: prod.description || "",
+      badge: prod.badge || "",
+      isBestseller: !!prod.isBestseller,
+    });
+    setIsAddProductOpen(true);
+  };
+
+  const handleOpenAddHero = () => {
+    setEditingHero(null);
+    setNewHero({
+      eyebrow: "AURA EXCLUSIVE",
+      title1: "",
+      title2: "",
+      description: "",
+      bullets: "Dermatologically tested, Zero white residue, 24h humidity lock",
+      price: "1299",
+      originalPrice: "1799",
+      image: "/images/hero_podium.png",
+      ctaText: "EXPLORE COLLECTION",
+      ctaLink: "/category/hair-styling-hold",
+    });
+    setIsAddHeroOpen(true);
+  };
+  const handleOpenEditHero = (slide: HeroCampaign) => {
+    setEditingHero(slide);
+    setNewHero({
+      eyebrow: slide.eyebrow || "AURA EXCLUSIVE",
+      title1: slide.title1 || "",
+      title2: slide.title2 || "",
+      description: slide.description || "",
+      bullets: Array.isArray(slide.bullets) ? slide.bullets.join(", ") : (slide.bullets || ""),
+      price: String(slide.price ?? 1299),
+      originalPrice: String(slide.originalPrice ?? 1799),
+      image: slide.image || "/images/hero_podium.png",
+      ctaText: slide.ctaText || "SHOP NOW",
+      ctaLink: slide.ctaLink || "/",
+    });
+    setIsAddHeroOpen(true);
+  };
+
+  const handleOpenAddAnn = () => {
+    setEditingAnn(null);
+    setNewAnn({
+      text: "",
+      cta: "SHOP NOW →",
+      link: "/category/hair-styling-hold",
+    });
+    setIsAddAnnOpen(true);
+  };
+  const handleOpenEditAnn = (item: AnnouncementItem) => {
+    setEditingAnn(item);
+    setNewAnn({
+      text: item.text || "",
+      cta: item.cta || "SHOP NOW →",
+      link: item.link || "/",
+    });
+    setIsAddAnnOpen(true);
+  };
+
+  const handleOpenAddCat = () => {
+    setEditingCat(null);
+    setNewCat({
+      name: "",
+      itemCount: "12",
+      image: "/images/cat_products.png",
+      link: "",
+    });
+    setIsAddCatOpen(true);
+  };
+  const handleOpenEditCat = (cat: Category) => {
+    setEditingCat(cat);
+    setNewCat({
+      name: cat.name || cat.title || "",
+      itemCount: String(cat.itemCount ?? 0),
+      image: cat.image || "/images/cat_products.png",
+      link: cat.link || "",
+    });
+    setIsAddCatOpen(true);
+  };
+
+  const handleOpenAddProcess = () => {
+    setEditingProcessIndex(null);
+    setNewProcess({
+      step: String(processSteps.length + 1).padStart(2, "0"),
+      title: "",
+      category: "REPAIR PHASE",
+      productName: "",
+      tagline: "",
+      description: "",
+      benefits: "",
+      howToUse: "",
+      result: "",
+      image: "/images/process_01_volumizer.png",
+      badge: `STEP ${String(processSteps.length + 1).padStart(2, "0")}`,
+    });
+    setIsAddProcessOpen(true);
+  };
+  const handleOpenEditProcess = (step: ProcessStep, idx: number) => {
+    setEditingProcessIndex(idx);
+    setNewProcess({
+      step: step.step || "",
+      title: step.title || "",
+      category: step.category || "",
+      productName: step.productName || "",
+      tagline: step.tagline || "",
+      description: step.description || "",
+      benefits: Array.isArray(step.benefits) ? step.benefits.join(", ") : (step.benefits || ""),
+      howToUse: step.howToUse || "",
+      result: step.result || "",
+      image: step.image || "/images/process_01_volumizer.png",
+      badge: step.badge || "",
+    });
+    setIsAddProcessOpen(true);
+  };
+
+  const handleOpenAddProductStory = () => {
+    setEditingProductStory(null);
+    setNewProductStory({
+      badge: "CLINICAL BREAKTHROUGH",
+      title: "",
+      description: "",
+      benefits: "",
+      image: "/images/combo_podium_1999.png",
+      floatingBadgeTitle: "90% Humidity Tested",
+      floatingBadgeDesc: "Zero flaking under direct studio lights.",
+      ctaText: "LEARN MORE",
+      ctaLink: "/category/hair-styling-hold",
+    });
+    setIsAddStoryOpen(true);
+  };
+  const handleOpenEditProductStory = (story: ProductStoryItem) => {
+    setEditingProductStory(story);
+    setNewProductStory({
+      badge: story.badge || "CLINICAL BREAKTHROUGH",
+      title: story.title || "",
+      description: story.description || "",
+      benefits: Array.isArray(story.benefits) ? story.benefits.join(", ") : (story.benefits || ""),
+      image: story.image || "/images/combo_podium_1999.png",
+      floatingBadgeTitle: story.floatingBadgeTitle || "",
+      floatingBadgeDesc: story.floatingBadgeDesc || "",
+      ctaText: story.ctaText || "LEARN MORE",
+      ctaLink: story.ctaLink || "/",
+    });
+    setIsAddStoryOpen(true);
+  };
+
+  const handleOpenAddReel = () => {
+    setEditingReel(null);
+    setNewReel({
+      title: "",
+      tag: "Salon Story",
+      views: "1.5K views",
+      image: "/images/story_card_1.jpg",
+      productName: "",
+      productPrice: "999",
+      productOriginalPrice: "1499",
+      handle: "aura-hair-styling",
+    });
+    setIsAddReelOpen(true);
+  };
+  const handleOpenEditReel = (reel: StoryReel) => {
+    setEditingReel(reel);
+    setNewReel({
+      title: reel.title || "",
+      tag: reel.tag || "Salon Story",
+      views: reel.views || "1.5K views",
+      image: reel.image || reel.coverImage || "/images/story_card_1.jpg",
+      productName: reel.productName || reel.taggedProductTitle || "",
+      productPrice: String(reel.productPrice ?? reel.taggedProductPrice ?? 999),
+      productOriginalPrice: String(reel.productOriginalPrice ?? 1499),
+      handle: reel.handle || reel.taggedProductId || "",
+    });
+    setIsAddReelOpen(true);
+  };
+
+  const handleOpenAddEx = () => {
+    setEditingEx(null);
+    setNewEx({
+      title: "",
+      location: "",
+      tag: "Grand Stage",
+      attendees: "10,000+ Visitors",
+      image: "/images/exhibition_1.jpg",
+    });
+    setIsAddExOpen(true);
+  };
+  const handleOpenEditEx = (ex: ExhibitionItem) => {
+    setEditingEx(ex);
+    setNewEx({
+      title: ex.title || "",
+      location: ex.location || "",
+      tag: ex.tag || "Grand Stage",
+      attendees: ex.attendees || "",
+      image: ex.image || "/images/exhibition_1.jpg",
+    });
+    setIsAddExOpen(true);
+  };
+
+  const handleOpenAddTest = () => {
+    setEditingTest(null);
+    setNewTest({
+      name: "",
+      role: "Verified Stylist",
+      rating: "5",
+      review: "",
+      avatar: "/images/person_vaishnavi.png",
+      location: "Mumbai",
+    });
+    setIsAddTestOpen(true);
+  };
+  const handleOpenEditTest = (t: Testimonial) => {
+    setEditingTest(t);
+    setNewTest({
+      name: t.name || "",
+      role: t.role || "Verified Stylist",
+      rating: String(t.rating ?? 5),
+      review: t.review || t.comment || "",
+      avatar: t.avatar || "/images/person_vaishnavi.png",
+      location: t.location || t.city || "Mumbai",
+    });
+    setIsAddTestOpen(true);
+  };
+
+  const handleOpenAddFaq = () => {
+    setEditingFaq(null);
+    setNewFaq({
+      question: "",
+      answer: "",
+    });
+    setIsAddFaqOpen(true);
+  };
+  const handleOpenEditFaq = (faq: FAQItem) => {
+    setEditingFaq(faq);
+    setNewFaq({
+      question: faq.question || "",
+      answer: faq.answer || "",
+    });
+    setIsAddFaqOpen(true);
+  };
+
+  const handleOpenAddCoupon = () => {
+    setEditingCoupon(null);
+    setNewCoupon({
+      code: "",
+      discountType: "percentage",
+      discountValue: "10",
+      minOrderValue: "499",
+    });
+    setIsAddCouponOpen(true);
+  };
+  const handleOpenEditCoupon = (cpn: Coupon) => {
+    setEditingCoupon(cpn);
+    setNewCoupon({
+      code: cpn.code || "",
+      discountType: cpn.discountType || "percentage",
+      discountValue: String(cpn.discountValue ?? 10),
+      minOrderValue: String(cpn.minOrderValue ?? 499),
+    });
+    setIsAddCouponOpen(true);
+  };
+
   const showNotification = (msg: string) => {
     setActionSuccess(msg);
     setTimeout(() => setActionSuccess(""), 4000);
@@ -298,22 +595,37 @@ export default function AdminDashboardPage() {
   }, []);
 
   // Handlers for Products
-  const handleCreateProduct = async (e: React.FormEvent) => {
+  const handleSaveProduct = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      const res = await fetch("/api/admin/products", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(newProduct),
-      });
-      const data = await res.json();
-      if (data.success) {
-        setIsAddProductOpen(false);
-        showNotification("Product added successfully!");
-        fetchAllAdminData();
+      if (editingProduct) {
+        const res = await fetch("/api/admin/products", {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ id: editingProduct.id, ...newProduct }),
+        });
+        const data = await res.json();
+        if (data.success) {
+          setIsAddProductOpen(false);
+          setEditingProduct(null);
+          showNotification("Product updated successfully!");
+          fetchAllAdminData();
+        }
+      } else {
+        const res = await fetch("/api/admin/products", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(newProduct),
+        });
+        const data = await res.json();
+        if (data.success) {
+          setIsAddProductOpen(false);
+          showNotification("Product added successfully!");
+          fetchAllAdminData();
+        }
       }
     } catch {
-      alert("Failed to add product");
+      alert("Failed to save product");
     }
   };
 
@@ -332,22 +644,37 @@ export default function AdminDashboardPage() {
   };
 
   // Handlers for Process Steps
-  const handleCreateProcess = async (e: React.FormEvent) => {
+  const handleSaveProcess = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      const res = await fetch("/api/admin/process", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(newProcess),
-      });
-      const data = await res.json();
-      if (data.success) {
-        setIsAddProcessOpen(false);
-        showNotification("Process step added!");
-        fetchAllAdminData();
+      if (editingProcessIndex !== null) {
+        const res = await fetch("/api/admin/process", {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ index: editingProcessIndex, ...newProcess }),
+        });
+        const data = await res.json();
+        if (data.success) {
+          setIsAddProcessOpen(false);
+          setEditingProcessIndex(null);
+          showNotification("Process step updated!");
+          fetchAllAdminData();
+        }
+      } else {
+        const res = await fetch("/api/admin/process", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(newProcess),
+        });
+        const data = await res.json();
+        if (data.success) {
+          setIsAddProcessOpen(false);
+          showNotification("Process step added!");
+          fetchAllAdminData();
+        }
       }
     } catch {
-      alert("Failed to add process step");
+      alert("Failed to save process step");
     }
   };
 
@@ -366,22 +693,37 @@ export default function AdminDashboardPage() {
   };
 
   // Handlers for Product Stories
-  const handleCreateProductStory = async (e: React.FormEvent) => {
+  const handleSaveProductStory = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      const res = await fetch("/api/admin/product-stories", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(newProductStory),
-      });
-      const data = await res.json();
-      if (data.success) {
-        setIsAddStoryOpen(false);
-        showNotification("Product Story added!");
-        fetchAllAdminData();
+      if (editingProductStory) {
+        const res = await fetch("/api/admin/product-stories", {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ id: editingProductStory.id, ...newProductStory }),
+        });
+        const data = await res.json();
+        if (data.success) {
+          setIsAddStoryOpen(false);
+          setEditingProductStory(null);
+          showNotification("Product Story updated!");
+          fetchAllAdminData();
+        }
+      } else {
+        const res = await fetch("/api/admin/product-stories", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(newProductStory),
+        });
+        const data = await res.json();
+        if (data.success) {
+          setIsAddStoryOpen(false);
+          showNotification("Product Story added!");
+          fetchAllAdminData();
+        }
       }
     } catch {
-      alert("Failed to add product story");
+      alert("Failed to save product story");
     }
   };
 
@@ -400,22 +742,37 @@ export default function AdminDashboardPage() {
   };
 
   // Handlers for Story Reels
-  const handleCreateStoryReel = async (e: React.FormEvent) => {
+  const handleSaveStoryReel = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      const res = await fetch("/api/admin/stories", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(newReel),
-      });
-      const data = await res.json();
-      if (data.success) {
-        setIsAddReelOpen(false);
-        showNotification("Story Reel video added!");
-        fetchAllAdminData();
+      if (editingReel) {
+        const res = await fetch("/api/admin/stories", {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ id: editingReel.id, ...newReel }),
+        });
+        const data = await res.json();
+        if (data.success) {
+          setIsAddReelOpen(false);
+          setEditingReel(null);
+          showNotification("Story Reel updated!");
+          fetchAllAdminData();
+        }
+      } else {
+        const res = await fetch("/api/admin/stories", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(newReel),
+        });
+        const data = await res.json();
+        if (data.success) {
+          setIsAddReelOpen(false);
+          showNotification("Story Reel video added!");
+          fetchAllAdminData();
+        }
       }
     } catch {
-      alert("Failed to add story reel");
+      alert("Failed to save story reel");
     }
   };
 
@@ -434,22 +791,37 @@ export default function AdminDashboardPage() {
   };
 
   // Handlers for Exhibitions
-  const handleCreateExhibition = async (e: React.FormEvent) => {
+  const handleSaveExhibition = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      const res = await fetch("/api/admin/exhibitions", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(newEx),
-      });
-      const data = await res.json();
-      if (data.success) {
-        setIsAddExOpen(false);
-        showNotification("Exhibition highlight added!");
-        fetchAllAdminData();
+      if (editingEx) {
+        const res = await fetch("/api/admin/exhibitions", {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ id: editingEx.id, ...newEx }),
+        });
+        const data = await res.json();
+        if (data.success) {
+          setIsAddExOpen(false);
+          setEditingEx(null);
+          showNotification("Exhibition updated!");
+          fetchAllAdminData();
+        }
+      } else {
+        const res = await fetch("/api/admin/exhibitions", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(newEx),
+        });
+        const data = await res.json();
+        if (data.success) {
+          setIsAddExOpen(false);
+          showNotification("Exhibition highlight added!");
+          fetchAllAdminData();
+        }
       }
     } catch {
-      alert("Failed to add exhibition");
+      alert("Failed to save exhibition");
     }
   };
 
@@ -468,22 +840,37 @@ export default function AdminDashboardPage() {
   };
 
   // Handlers for Hero Slides
-  const handleCreateHero = async (e: React.FormEvent) => {
+  const handleSaveHero = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      const res = await fetch("/api/admin/hero", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(newHero),
-      });
-      const data = await res.json();
-      if (data.success) {
-        setIsAddHeroOpen(false);
-        showNotification("Hero Banner added!");
-        fetchAllAdminData();
+      if (editingHero) {
+        const res = await fetch("/api/admin/hero", {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ id: editingHero.id, ...newHero }),
+        });
+        const data = await res.json();
+        if (data.success) {
+          setIsAddHeroOpen(false);
+          setEditingHero(null);
+          showNotification("Hero Banner updated!");
+          fetchAllAdminData();
+        }
+      } else {
+        const res = await fetch("/api/admin/hero", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(newHero),
+        });
+        const data = await res.json();
+        if (data.success) {
+          setIsAddHeroOpen(false);
+          showNotification("Hero Banner added!");
+          fetchAllAdminData();
+        }
       }
     } catch {
-      alert("Failed to add hero slide");
+      alert("Failed to save hero slide");
     }
   };
 
@@ -502,22 +889,37 @@ export default function AdminDashboardPage() {
   };
 
   // Handlers for Announcements
-  const handleAddAnnouncement = async (e: React.FormEvent) => {
+  const handleSaveAnnouncement = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      const res = await fetch("/api/admin/content", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ action: "addAnnouncementItem", newAnnouncementItem: newAnn }),
-      });
-      const data = await res.json();
-      if (data.success) {
-        setIsAddAnnOpen(false);
-        showNotification("Announcement notice added!");
-        fetchAllAdminData();
+      if (editingAnn) {
+        const res = await fetch("/api/admin/content", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ action: "updateAnnouncementItem", id: editingAnn.id, updates: newAnn }),
+        });
+        const data = await res.json();
+        if (data.success) {
+          setIsAddAnnOpen(false);
+          setEditingAnn(null);
+          showNotification("Announcement updated!");
+          fetchAllAdminData();
+        }
+      } else {
+        const res = await fetch("/api/admin/content", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ action: "addAnnouncementItem", newAnnouncementItem: newAnn }),
+        });
+        const data = await res.json();
+        if (data.success) {
+          setIsAddAnnOpen(false);
+          showNotification("Announcement notice added!");
+          fetchAllAdminData();
+        }
       }
     } catch {
-      alert("Failed to add announcement");
+      alert("Failed to save announcement");
     }
   };
 
@@ -539,22 +941,37 @@ export default function AdminDashboardPage() {
   };
 
   // Handlers for Categories
-  const handleCreateCategory = async (e: React.FormEvent) => {
+  const handleSaveCategory = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      const res = await fetch("/api/admin/categories", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(newCat),
-      });
-      const data = await res.json();
-      if (data.success) {
-        setIsAddCatOpen(false);
-        showNotification("Category created!");
-        fetchAllAdminData();
+      if (editingCat) {
+        const res = await fetch("/api/admin/categories", {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ id: editingCat.id, ...newCat }),
+        });
+        const data = await res.json();
+        if (data.success) {
+          setIsAddCatOpen(false);
+          setEditingCat(null);
+          showNotification("Category updated!");
+          fetchAllAdminData();
+        }
+      } else {
+        const res = await fetch("/api/admin/categories", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(newCat),
+        });
+        const data = await res.json();
+        if (data.success) {
+          setIsAddCatOpen(false);
+          showNotification("Category created!");
+          fetchAllAdminData();
+        }
       }
     } catch {
-      alert("Failed to create category");
+      alert("Failed to save category");
     }
   };
 
@@ -573,22 +990,37 @@ export default function AdminDashboardPage() {
   };
 
   // Handlers for Testimonials
-  const handleCreateTestimonial = async (e: React.FormEvent) => {
+  const handleSaveTestimonial = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      const res = await fetch("/api/admin/testimonials", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(newTest),
-      });
-      const data = await res.json();
-      if (data.success) {
-        setIsAddTestOpen(false);
-        showNotification("Review added!");
-        fetchAllAdminData();
+      if (editingTest) {
+        const res = await fetch("/api/admin/testimonials", {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ id: editingTest.id, ...newTest }),
+        });
+        const data = await res.json();
+        if (data.success) {
+          setIsAddTestOpen(false);
+          setEditingTest(null);
+          showNotification("Review updated!");
+          fetchAllAdminData();
+        }
+      } else {
+        const res = await fetch("/api/admin/testimonials", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(newTest),
+        });
+        const data = await res.json();
+        if (data.success) {
+          setIsAddTestOpen(false);
+          showNotification("Review added!");
+          fetchAllAdminData();
+        }
       }
     } catch {
-      alert("Failed to add testimonial");
+      alert("Failed to save testimonial");
     }
   };
 
@@ -607,22 +1039,37 @@ export default function AdminDashboardPage() {
   };
 
   // Handlers for FAQs
-  const handleCreateFaq = async (e: React.FormEvent) => {
+  const handleSaveFaq = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      const res = await fetch("/api/admin/faqs", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(newFaq),
-      });
-      const data = await res.json();
-      if (data.success) {
-        setIsAddFaqOpen(false);
-        showNotification("FAQ added!");
-        fetchAllAdminData();
+      if (editingFaq) {
+        const res = await fetch("/api/admin/faqs", {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ id: editingFaq.id, ...newFaq }),
+        });
+        const data = await res.json();
+        if (data.success) {
+          setIsAddFaqOpen(false);
+          setEditingFaq(null);
+          showNotification("FAQ updated!");
+          fetchAllAdminData();
+        }
+      } else {
+        const res = await fetch("/api/admin/faqs", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(newFaq),
+        });
+        const data = await res.json();
+        if (data.success) {
+          setIsAddFaqOpen(false);
+          showNotification("FAQ added!");
+          fetchAllAdminData();
+        }
       }
     } catch {
-      alert("Failed to add FAQ");
+      alert("Failed to save FAQ");
     }
   };
 
@@ -640,7 +1087,7 @@ export default function AdminDashboardPage() {
     }
   };
 
-  // Order status
+  // Order status & Delete
   const handleUpdateOrderStatus = async (orderId: string, status: Order["order_status"]) => {
     try {
       const res = await fetch("/api/admin/orders", {
@@ -658,28 +1105,77 @@ export default function AdminDashboardPage() {
     }
   };
 
-  // Coupons
-  const handleCreateCoupon = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleDeleteOrder = async (orderId: string) => {
+    if (!confirm("Are you sure you want to permanently delete this order?")) return;
     try {
-      const res = await fetch("/api/admin/coupons", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          code: newCoupon.code.toUpperCase(),
-          discountType: newCoupon.discountType,
-          discountValue: Number(newCoupon.discountValue),
-          minOrderValue: Number(newCoupon.minOrderValue),
-        }),
-      });
+      const res = await fetch(`/api/admin/orders?id=${orderId}`, { method: "DELETE" });
       const data = await res.json();
       if (data.success) {
-        setIsAddCouponOpen(false);
-        showNotification(`Coupon ${newCoupon.code.toUpperCase()} created!`);
+        showNotification("Order deleted successfully");
         fetchAllAdminData();
       }
     } catch {
-      alert("Failed to create coupon");
+      alert("Failed to delete order");
+    }
+  };
+
+  // Coupons
+  const handleSaveCoupon = async (e: React.FormEvent) => {
+    e.preventDefault();
+    try {
+      if (editingCoupon) {
+        const res = await fetch("/api/admin/coupons", {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            originalCode: editingCoupon.code,
+            code: newCoupon.code.toUpperCase(),
+            discountType: newCoupon.discountType,
+            discountValue: Number(newCoupon.discountValue),
+            minOrderValue: Number(newCoupon.minOrderValue),
+          }),
+        });
+        const data = await res.json();
+        if (data.success) {
+          setIsAddCouponOpen(false);
+          setEditingCoupon(null);
+          showNotification(`Coupon ${newCoupon.code.toUpperCase()} updated!`);
+          fetchAllAdminData();
+        }
+      } else {
+        const res = await fetch("/api/admin/coupons", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            code: newCoupon.code.toUpperCase(),
+            discountType: newCoupon.discountType,
+            discountValue: Number(newCoupon.discountValue),
+            minOrderValue: Number(newCoupon.minOrderValue),
+          }),
+        });
+        const data = await res.json();
+        if (data.success) {
+          setIsAddCouponOpen(false);
+          showNotification(`Coupon ${newCoupon.code.toUpperCase()} created!`);
+          fetchAllAdminData();
+        }
+      }
+    } catch {
+      alert("Failed to save coupon");
+    }
+  };
+
+  const handleDeleteCoupon = async (code: string) => {
+    if (!confirm(`Delete coupon code ${code}?`)) return;
+    try {
+      const res = await fetch(`/api/admin/coupons?code=${encodeURIComponent(code)}`, { method: "DELETE" });
+      const data = await res.json();
+      if (data.success) {
+        showNotification(`Coupon ${code} deleted`);
+        fetchAllAdminData();
+      }
+    } catch {
+      alert("Failed to delete coupon");
     }
   };
 
@@ -893,7 +1389,7 @@ export default function AdminDashboardPage() {
                   <button
                     onClick={() => {
                       setActiveTab("process");
-                      setIsAddProcessOpen(true);
+                      handleOpenAddProcess();
                     }}
                     className="px-3.5 py-2 bg-white text-[#142B70] rounded-xl text-xs font-bold hover:bg-sky-50 transition-colors flex items-center gap-1.5 shadow"
                   >
@@ -902,7 +1398,7 @@ export default function AdminDashboardPage() {
                   <button
                     onClick={() => {
                       setActiveTab("productStories");
-                      setIsAddStoryOpen(true);
+                      handleOpenAddProductStory();
                     }}
                     className="px-3.5 py-2 bg-sky-500 text-white rounded-xl text-xs font-bold hover:bg-sky-400 transition-colors flex items-center gap-1.5 shadow"
                   >
@@ -911,7 +1407,7 @@ export default function AdminDashboardPage() {
                   <button
                     onClick={() => {
                       setActiveTab("stories");
-                      setIsAddReelOpen(true);
+                      handleOpenAddReel();
                     }}
                     className="px-3.5 py-2 bg-white/10 hover:bg-white/20 text-white border border-white/20 rounded-xl text-xs font-bold transition-colors flex items-center gap-1.5"
                   >
@@ -920,7 +1416,7 @@ export default function AdminDashboardPage() {
                   <button
                     onClick={() => {
                       setActiveTab("exhibitions");
-                      setIsAddExOpen(true);
+                      handleOpenAddEx();
                     }}
                     className="px-3.5 py-2 bg-white/10 hover:bg-white/20 text-white border border-white/20 rounded-xl text-xs font-bold transition-colors flex items-center gap-1.5"
                   >
@@ -984,7 +1480,7 @@ export default function AdminDashboardPage() {
                 <p className="text-xs text-slate-500">The 3 sticky viewport steps with curved SVG path on the homepage.</p>
               </div>
               <button
-                onClick={() => setIsAddProcessOpen(true)}
+                onClick={handleOpenAddProcess}
                 className="px-4 py-2 bg-[#142B70] text-white rounded-xl text-xs sm:text-sm font-bold hover:bg-[#1E3A8A] transition-colors flex items-center gap-2 shadow-sm"
               >
                 <Plus className="w-4 h-4" /> Add Process Step
@@ -999,13 +1495,22 @@ export default function AdminDashboardPage() {
                       <span className="px-2.5 py-1 bg-[#142B70] text-white text-[11px] font-mono font-black rounded-md">
                         STEP {step.step}
                       </span>
-                      <button
-                        onClick={() => handleDeleteProcess(idx)}
-                        className="text-slate-400 hover:text-red-600 transition-colors p-1"
-                        title="Delete step"
-                      >
-                        <Trash2 className="w-4 h-4" />
-                      </button>
+                      <div className="flex items-center gap-1">
+                        <button
+                          onClick={() => handleOpenEditProcess(step, idx)}
+                          className="text-slate-400 hover:text-blue-600 transition-colors p-1"
+                          title="Edit step"
+                        >
+                          <Edit className="w-4 h-4" />
+                        </button>
+                        <button
+                          onClick={() => handleDeleteProcess(idx)}
+                          className="text-slate-400 hover:text-red-600 transition-colors p-1"
+                          title="Delete step"
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </button>
+                      </div>
                     </div>
 
                     <div className="space-y-1">
@@ -1050,7 +1555,7 @@ export default function AdminDashboardPage() {
                 <p className="text-xs text-slate-500">Editorial stories featuring large product photography and clinical proof badges.</p>
               </div>
               <button
-                onClick={() => setIsAddStoryOpen(true)}
+                onClick={handleOpenAddProductStory}
                 className="px-4 py-2 bg-[#142B70] text-white rounded-xl text-xs sm:text-sm font-bold hover:bg-[#1E3A8A] transition-colors flex items-center gap-2 shadow-sm"
               >
                 <Plus className="w-4 h-4" /> Add Product Story
@@ -1065,13 +1570,22 @@ export default function AdminDashboardPage() {
                       <span className="px-2.5 py-1 bg-sky-100 text-sky-800 text-[11px] font-bold rounded-md uppercase">
                         {story.badge}
                       </span>
-                      <button
-                        onClick={() => handleDeleteProductStory(story.id)}
-                        className="text-slate-400 hover:text-red-600 transition-colors p-1"
-                        title="Delete story"
-                      >
-                        <Trash2 className="w-4 h-4" />
-                      </button>
+                      <div className="flex items-center gap-1">
+                        <button
+                          onClick={() => handleOpenEditProductStory(story)}
+                          className="text-slate-400 hover:text-blue-600 transition-colors p-1"
+                          title="Edit story"
+                        >
+                          <Edit className="w-4 h-4" />
+                        </button>
+                        <button
+                          onClick={() => handleDeleteProductStory(story.id)}
+                          className="text-slate-400 hover:text-red-600 transition-colors p-1"
+                          title="Delete story"
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </button>
+                      </div>
                     </div>
 
                     <div className="space-y-1">
@@ -1118,7 +1632,7 @@ export default function AdminDashboardPage() {
                 <p className="text-xs text-slate-500">Portrait video reel cards with quick cart add & view count badges.</p>
               </div>
               <button
-                onClick={() => setIsAddReelOpen(true)}
+                onClick={handleOpenAddReel}
                 className="px-4 py-2 bg-[#142B70] text-white rounded-xl text-xs sm:text-sm font-bold hover:bg-[#1E3A8A] transition-colors flex items-center gap-2 shadow-sm"
               >
                 <Plus className="w-4 h-4" /> Add Story Reel
@@ -1155,13 +1669,23 @@ export default function AdminDashboardPage() {
                   </div>
 
                   <div className="p-3 bg-slate-50 border-t border-slate-100 flex items-center justify-between text-xs">
-                    <span className="text-slate-400 font-mono text-[10px] truncate max-w-[120px]">{reel.handle || reel.taggedProductId || reel.id}</span>
-                    <button
-                      onClick={() => handleDeleteStoryReel(reel.id)}
-                      className="text-red-600 hover:text-red-800 font-bold text-xs"
-                    >
-                      Delete
-                    </button>
+                    <span className="text-slate-400 font-mono text-[10px] truncate max-w-[90px]">{reel.handle || reel.taggedProductId || reel.id}</span>
+                    <div className="flex items-center gap-2">
+                      <button
+                        onClick={() => handleOpenEditReel(reel)}
+                        className="text-blue-600 hover:text-blue-800 font-bold text-xs flex items-center gap-1"
+                        title="Edit reel"
+                      >
+                        <Edit className="w-3.5 h-3.5" /> Edit
+                      </button>
+                      <button
+                        onClick={() => handleDeleteStoryReel(reel.id)}
+                        className="text-red-600 hover:text-red-800 font-bold text-xs flex items-center gap-1"
+                        title="Delete reel"
+                      >
+                        <Trash2 className="w-3.5 h-3.5" /> Delete
+                      </button>
+                    </div>
                   </div>
                 </div>
               ))}
@@ -1178,7 +1702,7 @@ export default function AdminDashboardPage() {
                 <p className="text-xs text-slate-500">Trade shows, salon summits, and live convention showcases.</p>
               </div>
               <button
-                onClick={() => setIsAddExOpen(true)}
+                onClick={handleOpenAddEx}
                 className="px-4 py-2 bg-[#142B70] text-white rounded-xl text-xs sm:text-sm font-bold hover:bg-[#1E3A8A] transition-colors flex items-center gap-2 shadow-sm"
               >
                 <Plus className="w-4 h-4" /> Add Exhibition
@@ -1203,12 +1727,22 @@ export default function AdminDashboardPage() {
 
                   <div className="p-3 bg-slate-50 border-t border-slate-100 flex items-center justify-between">
                     <span className="text-[10px] font-mono text-slate-400">ID: {ex.id}</span>
-                    <button
-                      onClick={() => handleDeleteExhibition(ex.id)}
-                      className="text-red-600 hover:text-red-800 font-bold text-xs"
-                    >
-                      Delete
-                    </button>
+                    <div className="flex items-center gap-2">
+                      <button
+                        onClick={() => handleOpenEditEx(ex)}
+                        className="text-blue-600 hover:text-blue-800 font-bold text-xs flex items-center gap-1"
+                        title="Edit exhibition"
+                      >
+                        <Edit className="w-3.5 h-3.5" /> Edit
+                      </button>
+                      <button
+                        onClick={() => handleDeleteExhibition(ex.id)}
+                        className="text-red-600 hover:text-red-800 font-bold text-xs flex items-center gap-1"
+                        title="Delete exhibition"
+                      >
+                        <Trash2 className="w-3.5 h-3.5" /> Delete
+                      </button>
+                    </div>
                   </div>
                 </div>
               ))}
@@ -1231,7 +1765,7 @@ export default function AdminDashboardPage() {
                 />
               </div>
               <button
-                onClick={() => setIsAddProductOpen(true)}
+                onClick={handleOpenAddProduct}
                 className="px-5 py-2.5 bg-[#142B70] text-white rounded-xl text-xs sm:text-sm font-bold hover:bg-[#1E3A8A] transition-colors flex items-center gap-2 shadow-sm self-start sm:self-auto"
               >
                 <Plus className="w-4 h-4" /> Add New Product
@@ -1286,13 +1820,22 @@ export default function AdminDashboardPage() {
                           </div>
                         </td>
                         <td className="px-6 py-4 text-right">
-                          <button
-                            onClick={() => handleDeleteProduct(prod.id)}
-                            className="p-1.5 text-slate-400 hover:text-red-600 rounded-lg hover:bg-red-50 transition-colors"
-                            title="Delete Product"
-                          >
-                            <Trash2 className="w-4 h-4" />
-                          </button>
+                          <div className="flex items-center justify-end gap-1.5">
+                            <button
+                              onClick={() => handleOpenEditProduct(prod)}
+                              className="p-1.5 text-slate-400 hover:text-blue-600 rounded-lg hover:bg-blue-50 transition-colors"
+                              title="Edit Product"
+                            >
+                              <Edit className="w-4 h-4" />
+                            </button>
+                            <button
+                              onClick={() => handleDeleteProduct(prod.id)}
+                              className="p-1.5 text-slate-400 hover:text-red-600 rounded-lg hover:bg-red-50 transition-colors"
+                              title="Delete Product"
+                            >
+                              <Trash2 className="w-4 h-4" />
+                            </button>
+                          </div>
                         </td>
                       </tr>
                     ))}
@@ -1312,7 +1855,7 @@ export default function AdminDashboardPage() {
                 <p className="text-xs text-slate-500">Manage headline sliders, campaign imagery, and CTA buttons.</p>
               </div>
               <button
-                onClick={() => setIsAddHeroOpen(true)}
+                onClick={handleOpenAddHero}
                 className="px-4 py-2 bg-[#142B70] text-white rounded-xl text-xs sm:text-sm font-bold hover:bg-[#1E3A8A] transition-colors flex items-center gap-2 shadow-sm"
               >
                 <Plus className="w-4 h-4" /> Add Hero Slide
@@ -1327,13 +1870,22 @@ export default function AdminDashboardPage() {
                       <span className="px-2.5 py-1 bg-sky-100 text-sky-800 text-[11px] font-bold rounded-md">
                         SLIDE #{idx + 1} • {slide.eyebrow}
                       </span>
-                      <button
-                        onClick={() => handleDeleteHero(slide.id)}
-                        className="p-1 text-slate-400 hover:text-red-600 transition-colors"
-                        title="Delete Slide"
-                      >
-                        <Trash2 className="w-4 h-4" />
-                      </button>
+                      <div className="flex items-center gap-1">
+                        <button
+                          onClick={() => handleOpenEditHero(slide)}
+                          className="p-1 text-slate-400 hover:text-blue-600 transition-colors"
+                          title="Edit Slide"
+                        >
+                          <Edit className="w-4 h-4" />
+                        </button>
+                        <button
+                          onClick={() => handleDeleteHero(slide.id)}
+                          className="p-1 text-slate-400 hover:text-red-600 transition-colors"
+                          title="Delete Slide"
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </button>
+                      </div>
                     </div>
 
                     <div className="space-y-1">
@@ -1370,7 +1922,7 @@ export default function AdminDashboardPage() {
                 <p className="text-xs text-slate-500">Live scrolling messages shown at the very top of the website.</p>
               </div>
               <button
-                onClick={() => setIsAddAnnOpen(true)}
+                onClick={handleOpenAddAnn}
                 className="px-4 py-2 bg-[#142B70] text-white rounded-xl text-xs sm:text-sm font-bold hover:bg-[#1E3A8A] transition-colors flex items-center gap-2 shadow-sm"
               >
                 <Plus className="w-4 h-4" /> Add Notice
@@ -1386,12 +1938,22 @@ export default function AdminDashboardPage() {
                       Button: <span className="font-semibold text-blue-600">{item.cta}</span> • Link: <span className="font-mono text-[11px]">{item.link}</span>
                     </p>
                   </div>
-                  <button
-                    onClick={() => handleDeleteAnnouncement(item.id)}
-                    className="p-1.5 text-slate-400 hover:text-red-600 rounded-lg hover:bg-red-50 transition-colors"
-                  >
-                    <Trash2 className="w-4 h-4" />
-                  </button>
+                  <div className="flex items-center gap-1.5">
+                    <button
+                      onClick={() => handleOpenEditAnn(item)}
+                      className="p-1.5 text-slate-400 hover:text-blue-600 rounded-lg hover:bg-blue-50 transition-colors"
+                      title="Edit Notice"
+                    >
+                      <Edit className="w-4 h-4" />
+                    </button>
+                    <button
+                      onClick={() => handleDeleteAnnouncement(item.id)}
+                      className="p-1.5 text-slate-400 hover:text-red-600 rounded-lg hover:bg-red-50 transition-colors"
+                      title="Delete Notice"
+                    >
+                      <Trash2 className="w-4 h-4" />
+                    </button>
+                  </div>
                 </div>
               ))}
             </div>
@@ -1407,7 +1969,7 @@ export default function AdminDashboardPage() {
                 <p className="text-xs text-slate-500">Categories shown on the homepage and catalog drawer.</p>
               </div>
               <button
-                onClick={() => setIsAddCatOpen(true)}
+                onClick={handleOpenAddCat}
                 className="px-4 py-2 bg-[#142B70] text-white rounded-xl text-xs sm:text-sm font-bold hover:bg-[#1E3A8A] transition-colors flex items-center gap-2 shadow-sm"
               >
                 <Plus className="w-4 h-4" /> Add Category
@@ -1431,12 +1993,22 @@ export default function AdminDashboardPage() {
                   </div>
                   <div className="p-3.5 bg-slate-50 border-t border-slate-100 flex items-center justify-between">
                     <span className="text-[11px] font-bold text-slate-500">ID: {cat.id}</span>
-                    <button
-                      onClick={() => handleDeleteCategory(cat.id)}
-                      className="text-xs text-red-600 hover:text-red-800 font-semibold flex items-center gap-1"
-                    >
-                      <Trash2 className="w-3.5 h-3.5" /> Delete
-                    </button>
+                    <div className="flex items-center gap-2">
+                      <button
+                        onClick={() => handleOpenEditCat(cat)}
+                        className="text-xs text-blue-600 hover:text-blue-800 font-semibold flex items-center gap-1"
+                        title="Edit Category"
+                      >
+                        <Edit className="w-3.5 h-3.5" /> Edit
+                      </button>
+                      <button
+                        onClick={() => handleDeleteCategory(cat.id)}
+                        className="text-xs text-red-600 hover:text-red-800 font-semibold flex items-center gap-1"
+                        title="Delete Category"
+                      >
+                        <Trash2 className="w-3.5 h-3.5" /> Delete
+                      </button>
+                    </div>
                   </div>
                 </div>
               ))}
@@ -1453,7 +2025,7 @@ export default function AdminDashboardPage() {
                 <p className="text-xs text-slate-500">Real social proof displayed on the landing page.</p>
               </div>
               <button
-                onClick={() => setIsAddTestOpen(true)}
+                onClick={handleOpenAddTest}
                 className="px-4 py-2 bg-[#142B70] text-white rounded-xl text-xs sm:text-sm font-bold hover:bg-[#1E3A8A] transition-colors flex items-center gap-2 shadow-sm"
               >
                 <Plus className="w-4 h-4" /> Add Review
@@ -1474,9 +2046,22 @@ export default function AdminDashboardPage() {
                           <p className="text-[11px] text-slate-500">{t.role} • {t.location}</p>
                         </div>
                       </div>
-                      <button onClick={() => handleDeleteTestimonial(t.id)} className="text-slate-400 hover:text-red-600">
-                        <Trash2 className="w-4 h-4" />
-                      </button>
+                      <div className="flex items-center gap-1">
+                        <button
+                          onClick={() => handleOpenEditTest(t)}
+                          className="text-slate-400 hover:text-blue-600 transition-colors p-1"
+                          title="Edit review"
+                        >
+                          <Edit className="w-4 h-4" />
+                        </button>
+                        <button
+                          onClick={() => handleDeleteTestimonial(t.id)}
+                          className="text-slate-400 hover:text-red-600 transition-colors p-1"
+                          title="Delete review"
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </button>
+                      </div>
                     </div>
                     <div className="flex items-center gap-1 text-amber-400">
                       {[...Array(t.rating || 5)].map((_, i) => (
@@ -1500,7 +2085,7 @@ export default function AdminDashboardPage() {
                 <p className="text-xs text-slate-500">Accordion questions answered for customers on the landing page.</p>
               </div>
               <button
-                onClick={() => setIsAddFaqOpen(true)}
+                onClick={handleOpenAddFaq}
                 className="px-4 py-2 bg-[#142B70] text-white rounded-xl text-xs sm:text-sm font-bold hover:bg-[#1E3A8A] transition-colors flex items-center gap-2 shadow-sm"
               >
                 <Plus className="w-4 h-4" /> Add FAQ
@@ -1514,12 +2099,22 @@ export default function AdminDashboardPage() {
                     <h4 className="text-sm font-bold text-slate-900">{faq.question}</h4>
                     <p className="text-xs text-slate-600 leading-relaxed">{faq.answer}</p>
                   </div>
-                  <button
-                    onClick={() => handleDeleteFaq(faq.id)}
-                    className="p-1.5 text-slate-400 hover:text-red-600 rounded-lg hover:bg-red-50 transition-colors shrink-0"
-                  >
-                    <Trash2 className="w-4 h-4" />
-                  </button>
+                  <div className="flex items-center gap-1 shrink-0">
+                    <button
+                      onClick={() => handleOpenEditFaq(faq)}
+                      className="p-1.5 text-slate-400 hover:text-blue-600 rounded-lg hover:bg-blue-50 transition-colors"
+                      title="Edit FAQ"
+                    >
+                      <Edit className="w-4 h-4" />
+                    </button>
+                    <button
+                      onClick={() => handleDeleteFaq(faq.id)}
+                      className="p-1.5 text-slate-400 hover:text-red-600 rounded-lg hover:bg-red-50 transition-colors"
+                      title="Delete FAQ"
+                    >
+                      <Trash2 className="w-4 h-4" />
+                    </button>
+                  </div>
                 </div>
               ))}
             </div>
@@ -1567,6 +2162,14 @@ export default function AdminDashboardPage() {
                             <option value="delivered">Delivered</option>
                             <option value="cancelled">Cancelled</option>
                           </select>
+                          <button
+                            type="button"
+                            onClick={() => handleDeleteOrder(ord.id)}
+                            className="p-1.5 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                            title="Delete Order"
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </button>
                         </div>
                       </div>
 
@@ -1621,7 +2224,7 @@ export default function AdminDashboardPage() {
                 <p className="text-xs text-slate-500">Live codes redeemable by users during checkout.</p>
               </div>
               <button
-                onClick={() => setIsAddCouponOpen(true)}
+                onClick={handleOpenAddCoupon}
                 className="px-4 py-2 bg-[#142B70] text-white rounded-xl text-xs sm:text-sm font-bold hover:bg-[#1E3A8A] transition-colors flex items-center gap-2 shadow-sm"
               >
                 <Plus className="w-4 h-4" /> Create Coupon
@@ -1643,6 +2246,25 @@ export default function AdminDashboardPage() {
                       {cpn.discountType === "percentage" ? `${cpn.discountValue}% OFF` : `₹${cpn.discountValue} OFF`}
                     </p>
                     <p className="text-xs text-slate-500 mt-1">Min. order: ₹{cpn.minOrderValue}</p>
+                  </div>
+
+                  <div className="pt-2 border-t border-slate-100 flex items-center justify-end gap-1">
+                    <button
+                      type="button"
+                      onClick={() => handleOpenEditCoupon(cpn)}
+                      className="p-1.5 text-slate-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
+                      title="Edit Coupon"
+                    >
+                      <Edit className="w-4 h-4" />
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => handleDeleteCoupon(cpn.code)}
+                      className="p-1.5 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                      title="Delete Coupon"
+                    >
+                      <Trash2 className="w-4 h-4" />
+                    </button>
                   </div>
                 </div>
               ))}
@@ -1747,16 +2369,18 @@ export default function AdminDashboardPage() {
         )}
       </div>
 
-      {/* MODAL: ADD OUR PROCESS STEP */}
+      {/* MODAL: ADD / EDIT OUR PROCESS STEP */}
       {isAddProcessOpen && (
         <div className="fixed inset-0 z-50 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4 overflow-y-auto">
           <div className="bg-white rounded-2xl max-w-lg w-full p-6 sm:p-8 space-y-4 shadow-2xl animate-in zoom-in-95">
             <div className="flex items-center justify-between border-b pb-3">
-              <h3 className="text-base font-black text-slate-900">Add Formulation Process Step</h3>
-              <button onClick={() => setIsAddProcessOpen(false)} className="text-slate-400 hover:text-slate-600">✕</button>
+              <h3 className="text-base font-black text-slate-900">
+                {editingProcessIndex !== null ? "Edit Formulation Process Step" : "Add Formulation Process Step"}
+              </h3>
+              <button onClick={() => { setIsAddProcessOpen(false); setEditingProcessIndex(null); }} className="text-slate-400 hover:text-slate-600">✕</button>
             </div>
 
-            <form onSubmit={handleCreateProcess} className="space-y-3.5">
+            <form onSubmit={handleSaveProcess} className="space-y-3.5">
               <div className="grid grid-cols-2 gap-3">
                 <div>
                   <label className="block text-xs font-bold text-slate-700 mb-1">Step Number</label>
@@ -1839,7 +2463,7 @@ export default function AdminDashboardPage() {
               <div className="pt-2 flex justify-end gap-3">
                 <button
                   type="button"
-                  onClick={() => setIsAddProcessOpen(false)}
+                  onClick={() => { setIsAddProcessOpen(false); setEditingProcessIndex(null); }}
                   className="px-4 py-2 border rounded-xl text-xs font-semibold text-slate-600 hover:bg-slate-50"
                 >
                   Cancel
@@ -1848,7 +2472,7 @@ export default function AdminDashboardPage() {
                   type="submit"
                   className="px-5 py-2 bg-[#142B70] text-white rounded-xl text-xs font-bold hover:bg-[#1E3A8A]"
                 >
-                  Save Process Step
+                  {editingProcessIndex !== null ? "Update Process Step" : "Save Process Step"}
                 </button>
               </div>
             </form>
@@ -1856,16 +2480,18 @@ export default function AdminDashboardPage() {
         </div>
       )}
 
-      {/* MODAL: ADD PRODUCT STORY */}
+      {/* MODAL: ADD / EDIT PRODUCT STORY */}
       {isAddStoryOpen && (
         <div className="fixed inset-0 z-50 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4 overflow-y-auto">
           <div className="bg-white rounded-2xl max-w-lg w-full p-6 sm:p-8 space-y-4 shadow-2xl animate-in zoom-in-95">
             <div className="flex items-center justify-between border-b pb-3">
-              <h3 className="text-base font-black text-slate-900">Add Product Story</h3>
-              <button onClick={() => setIsAddStoryOpen(false)} className="text-slate-400 hover:text-slate-600">✕</button>
+              <h3 className="text-base font-black text-slate-900">
+                {editingProductStory ? "Edit Product Story" : "Add Product Story"}
+              </h3>
+              <button onClick={() => { setIsAddStoryOpen(false); setEditingProductStory(null); }} className="text-slate-400 hover:text-slate-600">✕</button>
             </div>
 
-            <form onSubmit={handleCreateProductStory} className="space-y-3.5">
+            <form onSubmit={handleSaveProductStory} className="space-y-3.5">
               <div className="grid grid-cols-2 gap-3">
                 <div>
                   <label className="block text-xs font-bold text-slate-700 mb-1">Badge Tag</label>
@@ -1944,7 +2570,7 @@ export default function AdminDashboardPage() {
               <div className="pt-2 flex justify-end gap-3">
                 <button
                   type="button"
-                  onClick={() => setIsAddStoryOpen(false)}
+                  onClick={() => { setIsAddStoryOpen(false); setEditingProductStory(null); }}
                   className="px-4 py-2 border rounded-xl text-xs font-semibold text-slate-600 hover:bg-slate-50"
                 >
                   Cancel
@@ -1953,7 +2579,7 @@ export default function AdminDashboardPage() {
                   type="submit"
                   className="px-5 py-2 bg-[#142B70] text-white rounded-xl text-xs font-bold hover:bg-[#1E3A8A]"
                 >
-                  Save Product Story
+                  {editingProductStory ? "Update Product Story" : "Save Product Story"}
                 </button>
               </div>
             </form>
@@ -1961,16 +2587,18 @@ export default function AdminDashboardPage() {
         </div>
       )}
 
-      {/* MODAL: ADD STORY REEL */}
+      {/* MODAL: ADD / EDIT STORY REEL */}
       {isAddReelOpen && (
         <div className="fixed inset-0 z-50 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4">
           <div className="bg-white rounded-2xl max-w-md w-full p-6 space-y-4 shadow-2xl animate-in zoom-in-95">
             <div className="flex items-center justify-between border-b pb-3">
-              <h3 className="text-base font-black text-slate-900">Add Video Reel</h3>
-              <button onClick={() => setIsAddReelOpen(false)} className="text-slate-400 hover:text-slate-600">✕</button>
+              <h3 className="text-base font-black text-slate-900">
+                {editingReel ? "Edit Video Reel" : "Add Video Reel"}
+              </h3>
+              <button onClick={() => { setIsAddReelOpen(false); setEditingReel(null); }} className="text-slate-400 hover:text-slate-600">✕</button>
             </div>
 
-            <form onSubmit={handleCreateStoryReel} className="space-y-3.5">
+            <form onSubmit={handleSaveStoryReel} className="space-y-3.5">
               <div>
                 <label className="block text-xs font-bold text-slate-700 mb-1">Reel Title</label>
                 <input
@@ -2037,7 +2665,7 @@ export default function AdminDashboardPage() {
               <div className="pt-2 flex justify-end gap-3">
                 <button
                   type="button"
-                  onClick={() => setIsAddReelOpen(false)}
+                  onClick={() => { setIsAddReelOpen(false); setEditingReel(null); }}
                   className="px-4 py-2 border rounded-xl text-xs font-semibold text-slate-600 hover:bg-slate-50"
                 >
                   Cancel
@@ -2046,7 +2674,7 @@ export default function AdminDashboardPage() {
                   type="submit"
                   className="px-5 py-2 bg-[#142B70] text-white rounded-xl text-xs font-bold hover:bg-[#1E3A8A]"
                 >
-                  Save Reel
+                  {editingReel ? "Update Reel" : "Save Reel"}
                 </button>
               </div>
             </form>
@@ -2054,16 +2682,18 @@ export default function AdminDashboardPage() {
         </div>
       )}
 
-      {/* MODAL: ADD EXHIBITION */}
+      {/* MODAL: ADD / EDIT EXHIBITION */}
       {isAddExOpen && (
         <div className="fixed inset-0 z-50 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4">
           <div className="bg-white rounded-2xl max-w-md w-full p-6 space-y-4 shadow-2xl animate-in zoom-in-95">
             <div className="flex items-center justify-between border-b pb-3">
-              <h3 className="text-base font-black text-slate-900">Add Exhibition Highlight</h3>
-              <button onClick={() => setIsAddExOpen(false)} className="text-slate-400 hover:text-slate-600">✕</button>
+              <h3 className="text-base font-black text-slate-900">
+                {editingEx ? "Edit Exhibition Highlight" : "Add Exhibition Highlight"}
+              </h3>
+              <button onClick={() => { setIsAddExOpen(false); setEditingEx(null); }} className="text-slate-400 hover:text-slate-600">✕</button>
             </div>
 
-            <form onSubmit={handleCreateExhibition} className="space-y-3.5">
+            <form onSubmit={handleSaveExhibition} className="space-y-3.5">
               <div>
                 <label className="block text-xs font-bold text-slate-700 mb-1">Exhibition Title</label>
                 <input
@@ -2120,7 +2750,7 @@ export default function AdminDashboardPage() {
               <div className="pt-2 flex justify-end gap-3">
                 <button
                   type="button"
-                  onClick={() => setIsAddExOpen(false)}
+                  onClick={() => { setIsAddExOpen(false); setEditingEx(null); }}
                   className="px-4 py-2 border rounded-xl text-xs font-semibold text-slate-600 hover:bg-slate-50"
                 >
                   Cancel
@@ -2129,7 +2759,7 @@ export default function AdminDashboardPage() {
                   type="submit"
                   className="px-5 py-2 bg-[#142B70] text-white rounded-xl text-xs font-bold hover:bg-[#1E3A8A]"
                 >
-                  Save Exhibition
+                  {editingEx ? "Update Exhibition" : "Save Exhibition"}
                 </button>
               </div>
             </form>
@@ -2137,16 +2767,18 @@ export default function AdminDashboardPage() {
         </div>
       )}
 
-      {/* MODAL: ADD PRODUCT */}
+      {/* MODAL: ADD / EDIT PRODUCT */}
       {isAddProductOpen && (
         <div className="fixed inset-0 z-50 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4 overflow-y-auto">
           <div className="bg-white rounded-2xl max-w-lg w-full p-6 sm:p-8 space-y-4 shadow-2xl animate-in zoom-in-95">
             <div className="flex items-center justify-between border-b pb-3">
-              <h3 className="text-base font-black text-slate-900">Add New Product</h3>
-              <button onClick={() => setIsAddProductOpen(false)} className="text-slate-400 hover:text-slate-600">✕</button>
+              <h3 className="text-base font-black text-slate-900">
+                {editingProduct ? "Edit Product" : "Add New Product"}
+              </h3>
+              <button onClick={() => { setIsAddProductOpen(false); setEditingProduct(null); }} className="text-slate-400 hover:text-slate-600">✕</button>
             </div>
 
-            <form onSubmit={handleCreateProduct} className="space-y-3.5">
+            <form onSubmit={handleSaveProduct} className="space-y-3.5">
               <div>
                 <label className="block text-xs font-bold text-slate-700 mb-1">Product Title</label>
                 <input
@@ -2233,7 +2865,7 @@ export default function AdminDashboardPage() {
               <div className="pt-2 flex justify-end gap-3">
                 <button
                   type="button"
-                  onClick={() => setIsAddProductOpen(false)}
+                  onClick={() => { setIsAddProductOpen(false); setEditingProduct(null); }}
                   className="px-4 py-2 border rounded-xl text-xs font-semibold text-slate-600 hover:bg-slate-50"
                 >
                   Cancel
@@ -2242,7 +2874,7 @@ export default function AdminDashboardPage() {
                   type="submit"
                   className="px-5 py-2 bg-[#142B70] text-white rounded-xl text-xs font-bold hover:bg-[#1E3A8A]"
                 >
-                  Save Product
+                  {editingProduct ? "Update Product" : "Save Product"}
                 </button>
               </div>
             </form>
@@ -2250,16 +2882,18 @@ export default function AdminDashboardPage() {
         </div>
       )}
 
-      {/* MODAL: ADD HERO SLIDE */}
+      {/* MODAL: ADD / EDIT HERO SLIDE */}
       {isAddHeroOpen && (
         <div className="fixed inset-0 z-50 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4">
           <div className="bg-white rounded-2xl max-w-lg w-full p-6 space-y-4 shadow-2xl animate-in zoom-in-95">
             <div className="flex items-center justify-between border-b pb-3">
-              <h3 className="text-base font-black text-slate-900">Add Hero Banner Slide</h3>
-              <button onClick={() => setIsAddHeroOpen(false)} className="text-slate-400 hover:text-slate-600">✕</button>
+              <h3 className="text-base font-black text-slate-900">
+                {editingHero ? "Edit Hero Banner Slide" : "Add Hero Banner Slide"}
+              </h3>
+              <button onClick={() => { setIsAddHeroOpen(false); setEditingHero(null); }} className="text-slate-400 hover:text-slate-600">✕</button>
             </div>
 
-            <form onSubmit={handleCreateHero} className="space-y-3.5">
+            <form onSubmit={handleSaveHero} className="space-y-3.5">
               <div className="grid grid-cols-2 gap-3">
                 <div>
                   <label className="block text-xs font-bold text-slate-700 mb-1">Headline 1</label>
@@ -2296,7 +2930,7 @@ export default function AdminDashboardPage() {
               <div className="pt-2 flex justify-end gap-3">
                 <button
                   type="button"
-                  onClick={() => setIsAddHeroOpen(false)}
+                  onClick={() => { setIsAddHeroOpen(false); setEditingHero(null); }}
                   className="px-4 py-2 border rounded-xl text-xs font-semibold text-slate-600 hover:bg-slate-50"
                 >
                   Cancel
@@ -2305,7 +2939,7 @@ export default function AdminDashboardPage() {
                   type="submit"
                   className="px-5 py-2 bg-[#142B70] text-white rounded-xl text-xs font-bold hover:bg-[#1E3A8A]"
                 >
-                  Save Hero Slide
+                  {editingHero ? "Update Hero Slide" : "Save Hero Slide"}
                 </button>
               </div>
             </form>
@@ -2313,16 +2947,18 @@ export default function AdminDashboardPage() {
         </div>
       )}
 
-      {/* MODAL: ADD ANNOUNCEMENT */}
+      {/* MODAL: ADD / EDIT ANNOUNCEMENT */}
       {isAddAnnOpen && (
         <div className="fixed inset-0 z-50 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4">
           <div className="bg-white rounded-2xl max-w-md w-full p-6 space-y-4 shadow-2xl animate-in zoom-in-95">
             <div className="flex items-center justify-between border-b pb-3">
-              <h3 className="text-base font-black text-slate-900">Add Announcement Notice</h3>
-              <button onClick={() => setIsAddAnnOpen(false)} className="text-slate-400 hover:text-slate-600">✕</button>
+              <h3 className="text-base font-black text-slate-900">
+                {editingAnn ? "Edit Announcement Notice" : "Add Announcement Notice"}
+              </h3>
+              <button onClick={() => { setIsAddAnnOpen(false); setEditingAnn(null); }} className="text-slate-400 hover:text-slate-600">✕</button>
             </div>
 
-            <form onSubmit={handleAddAnnouncement} className="space-y-3.5">
+            <form onSubmit={handleSaveAnnouncement} className="space-y-3.5">
               <div>
                 <label className="block text-xs font-bold text-slate-700 mb-1">Notice Text</label>
                 <input
@@ -2360,7 +2996,7 @@ export default function AdminDashboardPage() {
               <div className="pt-2 flex justify-end gap-3">
                 <button
                   type="button"
-                  onClick={() => setIsAddAnnOpen(false)}
+                  onClick={() => { setIsAddAnnOpen(false); setEditingAnn(null); }}
                   className="px-4 py-2 border rounded-xl text-xs font-semibold text-slate-600 hover:bg-slate-50"
                 >
                   Cancel
@@ -2369,7 +3005,7 @@ export default function AdminDashboardPage() {
                   type="submit"
                   className="px-5 py-2 bg-[#142B70] text-white rounded-xl text-xs font-bold hover:bg-[#1E3A8A]"
                 >
-                  Save Notice
+                  {editingAnn ? "Update Notice" : "Save Notice"}
                 </button>
               </div>
             </form>
@@ -2377,16 +3013,18 @@ export default function AdminDashboardPage() {
         </div>
       )}
 
-      {/* MODAL: ADD CATEGORY */}
+      {/* MODAL: ADD / EDIT CATEGORY */}
       {isAddCatOpen && (
         <div className="fixed inset-0 z-50 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4">
           <div className="bg-white rounded-2xl max-w-md w-full p-6 space-y-4 shadow-2xl animate-in zoom-in-95">
             <div className="flex items-center justify-between border-b pb-3">
-              <h3 className="text-base font-black text-slate-900">Add Store Category</h3>
-              <button onClick={() => setIsAddCatOpen(false)} className="text-slate-400 hover:text-slate-600">✕</button>
+              <h3 className="text-base font-black text-slate-900">
+                {editingCat ? "Edit Store Category" : "Add Store Category"}
+              </h3>
+              <button onClick={() => { setIsAddCatOpen(false); setEditingCat(null); }} className="text-slate-400 hover:text-slate-600">✕</button>
             </div>
 
-            <form onSubmit={handleCreateCategory} className="space-y-3.5">
+            <form onSubmit={handleSaveCategory} className="space-y-3.5">
               <div>
                 <label className="block text-xs font-bold text-slate-700 mb-1">Category Name</label>
                 <input
@@ -2422,7 +3060,7 @@ export default function AdminDashboardPage() {
               <div className="pt-2 flex justify-end gap-3">
                 <button
                   type="button"
-                  onClick={() => setIsAddCatOpen(false)}
+                  onClick={() => { setIsAddCatOpen(false); setEditingCat(null); }}
                   className="px-4 py-2 border rounded-xl text-xs font-semibold text-slate-600 hover:bg-slate-50"
                 >
                   Cancel
@@ -2431,7 +3069,7 @@ export default function AdminDashboardPage() {
                   type="submit"
                   className="px-5 py-2 bg-[#142B70] text-white rounded-xl text-xs font-bold hover:bg-[#1E3A8A]"
                 >
-                  Save Category
+                  {editingCat ? "Update Category" : "Save Category"}
                 </button>
               </div>
             </form>
@@ -2439,16 +3077,18 @@ export default function AdminDashboardPage() {
         </div>
       )}
 
-      {/* MODAL: ADD TESTIMONIAL */}
+      {/* MODAL: ADD / EDIT TESTIMONIAL */}
       {isAddTestOpen && (
         <div className="fixed inset-0 z-50 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4">
           <div className="bg-white rounded-2xl max-w-md w-full p-6 space-y-4 shadow-2xl animate-in zoom-in-95">
             <div className="flex items-center justify-between border-b pb-3">
-              <h3 className="text-base font-black text-slate-900">Add Testimonial</h3>
-              <button onClick={() => setIsAddTestOpen(false)} className="text-slate-400 hover:text-slate-600">✕</button>
+              <h3 className="text-base font-black text-slate-900">
+                {editingTest ? "Edit Testimonial" : "Add Testimonial"}
+              </h3>
+              <button onClick={() => { setIsAddTestOpen(false); setEditingTest(null); }} className="text-slate-400 hover:text-slate-600">✕</button>
             </div>
 
-            <form onSubmit={handleCreateTestimonial} className="space-y-3.5">
+            <form onSubmit={handleSaveTestimonial} className="space-y-3.5">
               <div>
                 <label className="block text-xs font-bold text-slate-700 mb-1">Name</label>
                 <input
@@ -2484,7 +3124,7 @@ export default function AdminDashboardPage() {
               <div className="pt-2 flex justify-end gap-3">
                 <button
                   type="button"
-                  onClick={() => setIsAddTestOpen(false)}
+                  onClick={() => { setIsAddTestOpen(false); setEditingTest(null); }}
                   className="px-4 py-2 border rounded-xl text-xs font-semibold text-slate-600 hover:bg-slate-50"
                 >
                   Cancel
@@ -2493,7 +3133,7 @@ export default function AdminDashboardPage() {
                   type="submit"
                   className="px-5 py-2 bg-[#142B70] text-white rounded-xl text-xs font-bold hover:bg-[#1E3A8A]"
                 >
-                  Save Review
+                  {editingTest ? "Update Review" : "Save Review"}
                 </button>
               </div>
             </form>
@@ -2501,16 +3141,18 @@ export default function AdminDashboardPage() {
         </div>
       )}
 
-      {/* MODAL: ADD FAQ */}
+      {/* MODAL: ADD / EDIT FAQ */}
       {isAddFaqOpen && (
         <div className="fixed inset-0 z-50 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4">
           <div className="bg-white rounded-2xl max-w-md w-full p-6 space-y-4 shadow-2xl animate-in zoom-in-95">
             <div className="flex items-center justify-between border-b pb-3">
-              <h3 className="text-base font-black text-slate-900">Add FAQ Item</h3>
-              <button onClick={() => setIsAddFaqOpen(false)} className="text-slate-400 hover:text-slate-600">✕</button>
+              <h3 className="text-base font-black text-slate-900">
+                {editingFaq ? "Edit FAQ Item" : "Add FAQ Item"}
+              </h3>
+              <button onClick={() => { setIsAddFaqOpen(false); setEditingFaq(null); }} className="text-slate-400 hover:text-slate-600">✕</button>
             </div>
 
-            <form onSubmit={handleCreateFaq} className="space-y-3.5">
+            <form onSubmit={handleSaveFaq} className="space-y-3.5">
               <div>
                 <label className="block text-xs font-bold text-slate-700 mb-1">Question</label>
                 <input
@@ -2536,7 +3178,7 @@ export default function AdminDashboardPage() {
               <div className="pt-2 flex justify-end gap-3">
                 <button
                   type="button"
-                  onClick={() => setIsAddFaqOpen(false)}
+                  onClick={() => { setIsAddFaqOpen(false); setEditingFaq(null); }}
                   className="px-4 py-2 border rounded-xl text-xs font-semibold text-slate-600 hover:bg-slate-50"
                 >
                   Cancel
@@ -2545,7 +3187,7 @@ export default function AdminDashboardPage() {
                   type="submit"
                   className="px-5 py-2 bg-[#142B70] text-white rounded-xl text-xs font-bold hover:bg-[#1E3A8A]"
                 >
-                  Save FAQ
+                  {editingFaq ? "Update FAQ" : "Save FAQ"}
                 </button>
               </div>
             </form>
@@ -2553,16 +3195,18 @@ export default function AdminDashboardPage() {
         </div>
       )}
 
-      {/* MODAL: ADD COUPON */}
+      {/* MODAL: ADD / EDIT COUPON */}
       {isAddCouponOpen && (
         <div className="fixed inset-0 z-50 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4">
           <div className="bg-white rounded-2xl max-w-md w-full p-6 space-y-4 shadow-2xl animate-in zoom-in-95">
             <div className="flex items-center justify-between border-b pb-3">
-              <h3 className="text-base font-black text-slate-900">Create Discount Coupon</h3>
-              <button onClick={() => setIsAddCouponOpen(false)} className="text-slate-400 hover:text-slate-600">✕</button>
+              <h3 className="text-base font-black text-slate-900">
+                {editingCoupon ? "Edit Discount Coupon" : "Create Discount Coupon"}
+              </h3>
+              <button onClick={() => { setIsAddCouponOpen(false); setEditingCoupon(null); }} className="text-slate-400 hover:text-slate-600">✕</button>
             </div>
 
-            <form onSubmit={handleCreateCoupon} className="space-y-3.5">
+            <form onSubmit={handleSaveCoupon} className="space-y-3.5">
               <div>
                 <label className="block text-xs font-bold text-slate-700 mb-1">Coupon Promo Code</label>
                 <input
@@ -2601,7 +3245,7 @@ export default function AdminDashboardPage() {
               <div className="pt-2 flex justify-end gap-3">
                 <button
                   type="button"
-                  onClick={() => setIsAddCouponOpen(false)}
+                  onClick={() => { setIsAddCouponOpen(false); setEditingCoupon(null); }}
                   className="px-4 py-2 border rounded-xl text-xs font-semibold text-slate-600 hover:bg-slate-50"
                 >
                   Cancel
@@ -2610,7 +3254,7 @@ export default function AdminDashboardPage() {
                   type="submit"
                   className="px-5 py-2 bg-[#142B70] text-white rounded-xl text-xs font-bold hover:bg-[#1E3A8A]"
                 >
-                  Create Coupon
+                  {editingCoupon ? "Update Coupon" : "Create Coupon"}
                 </button>
               </div>
             </form>
