@@ -6,6 +6,7 @@ import Link from "next/link";
 import { Check, ArrowRight, ShieldCheck, Zap } from "lucide-react";
 import { useStoreContent } from "@/context/StoreContentContext";
 import { productStories as defaultStories } from "@/data/productStory";
+import { isInstagramUrl, isVideoUrl, toInstagramEmbedUrl } from "@/lib/mediaUtils";
 
 export default function ProductStory() {
   const { productStories: dynamicStories } = useStoreContent();
@@ -39,9 +40,16 @@ export default function ProductStory() {
               {/* Product Image Column */}
               <div className={`lg:col-span-6 relative ${isEven ? "order-1" : "order-1 lg:order-2"}`}>
                 <div className="relative aspect-[4/3] sm:aspect-[16/11] rounded-3xl overflow-hidden bg-gradient-to-tr from-[#EAF3FF] to-white border border-[#E5E7EB] shadow-md p-6 flex items-center justify-center">
-                  {(story.image || "").endsWith(".mp4") ||
-                  (story.image || "").endsWith(".webm") ||
-                  (story.image || "").startsWith("data:video") ? (
+                  {isInstagramUrl(story.image || "") ? (
+                    <iframe
+                      src={toInstagramEmbedUrl(story.image || "")}
+                      className="w-full h-full rounded-2xl"
+                      frameBorder="0"
+                      scrolling="no"
+                      allowTransparency
+                      allow="autoplay; clipboard-write; encrypted-media; picture-in-picture; web-share"
+                    />
+                  ) : isVideoUrl(story.image || "") ? (
                     <video
                       src={story.image}
                       autoPlay

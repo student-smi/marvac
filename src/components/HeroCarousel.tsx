@@ -6,6 +6,7 @@ import Link from "next/link";
 import { Check, ArrowRight, ChevronLeft, ChevronRight, Sparkles } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useStoreContent } from "@/context/StoreContentContext";
+import { isInstagramUrl, isVideoUrl, toInstagramEmbedUrl } from "@/lib/mediaUtils";
 
 export default function HeroCarousel() {
   const { heroCampaigns } = useStoreContent();
@@ -140,9 +141,16 @@ export default function HeroCarousel() {
                 transition={{ duration: 0.4 }}
                 className="relative w-full max-w-[580px] aspect-[4/3] sm:aspect-[16/11] flex items-center justify-center p-4 z-10"
               >
-                {(camp.image || "").endsWith(".mp4") ||
-                (camp.image || "").endsWith(".webm") ||
-                (camp.image || "").startsWith("data:video") ? (
+                {isInstagramUrl(camp.image || "") ? (
+                  <iframe
+                    src={toInstagramEmbedUrl(camp.image || "")}
+                    className="w-full h-full rounded-2xl"
+                    frameBorder="0"
+                    scrolling="no"
+                    allowTransparency
+                    allow="autoplay; clipboard-write; encrypted-media; picture-in-picture; web-share"
+                  />
+                ) : isVideoUrl(camp.image || "") ? (
                   <video
                     src={camp.image}
                     autoPlay

@@ -8,6 +8,7 @@ import { useCart } from "@/context/CartContext";
 import { products } from "@/data/products";
 import { motion, AnimatePresence } from "framer-motion";
 import { useStoreContent } from "@/context/StoreContentContext";
+import { isInstagramUrl, isVideoUrl, toInstagramEmbedUrl } from "@/lib/mediaUtils";
 
 export default function ShopTheStories() {
   const { addToCart } = useCart();
@@ -51,9 +52,16 @@ export default function ShopTheStories() {
               className="group cursor-pointer flex-none w-[180px] sm:w-[230px] flex flex-col bg-white rounded-2xl overflow-hidden border border-[#E5E7EB] hover:border-[#2445A8]/30 shadow-xs hover:shadow-xl transition-all duration-300 hover:-translate-y-1 whitespace-normal select-none"
             >
               <div className="relative aspect-[9/14] w-full overflow-hidden bg-black">
-                {(story.image || story.coverImage || "").endsWith(".mp4") ||
-                (story.image || story.coverImage || "").endsWith(".webm") ||
-                (story.image || story.coverImage || "").startsWith("data:video") ? (
+                {isInstagramUrl(story.image || story.coverImage || "") ? (
+                  <iframe
+                    src={toInstagramEmbedUrl(story.image || story.coverImage || "")}
+                    className="w-full h-full"
+                    frameBorder="0"
+                    scrolling="no"
+                    allowTransparency
+                    allow="autoplay; clipboard-write; encrypted-media; picture-in-picture; web-share"
+                  />
+                ) : isVideoUrl(story.image || story.coverImage || "") ? (
                   <video
                     src={story.image || story.coverImage}
                     autoPlay
@@ -120,9 +128,16 @@ export default function ShopTheStories() {
               className="group cursor-pointer flex-none w-[180px] sm:w-[230px] flex flex-col bg-white rounded-2xl overflow-hidden border border-[#E5E7EB] hover:border-[#2445A8]/30 shadow-xs hover:shadow-xl transition-all duration-300 hover:-translate-y-1 whitespace-normal select-none"
             >
               <div className="relative aspect-[9/14] w-full overflow-hidden bg-black">
-                {(story.image || story.coverImage || "").endsWith(".mp4") ||
-                (story.image || story.coverImage || "").endsWith(".webm") ||
-                (story.image || story.coverImage || "").startsWith("data:video") ? (
+                {isInstagramUrl(story.image || story.coverImage || "") ? (
+                  <iframe
+                    src={toInstagramEmbedUrl(story.image || story.coverImage || "")}
+                    className="w-full h-full"
+                    frameBorder="0"
+                    scrolling="no"
+                    allowTransparency
+                    allow="autoplay; clipboard-write; encrypted-media; picture-in-picture; web-share"
+                  />
+                ) : isVideoUrl(story.image || story.coverImage || "") ? (
                   <video
                     src={story.image || story.coverImage}
                     autoPlay
@@ -218,9 +233,16 @@ export default function ShopTheStories() {
               </div>
 
               <div className="absolute inset-0">
-                {(activeStory.image || activeStory.coverImage || "").endsWith(".mp4") ||
-                (activeStory.image || activeStory.coverImage || "").endsWith(".webm") ||
-                (activeStory.image || activeStory.coverImage || "").startsWith("data:video") ? (
+                {isInstagramUrl(activeStory.image || activeStory.coverImage || "") ? (
+                  <iframe
+                    src={toInstagramEmbedUrl(activeStory.image || activeStory.coverImage || "")}
+                    className="w-full h-full"
+                    frameBorder="0"
+                    scrolling="no"
+                    allowTransparency
+                    allow="autoplay; clipboard-write; encrypted-media; picture-in-picture; web-share"
+                  />
+                ) : isVideoUrl(activeStory.image || activeStory.coverImage || "") ? (
                   <video
                     src={activeStory.image || activeStory.coverImage}
                     autoPlay

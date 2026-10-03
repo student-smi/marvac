@@ -104,7 +104,10 @@ function ImageUploadField({
   onChange: (val: string) => void;
   aspectHint?: string;
 }) {
-  const [mode, setMode] = useState<"file" | "url">(value?.startsWith("http") || value?.startsWith("/images") ? "url" : "file");
+  const isInstaVal = /instagram\.com\/(reel|p|tv)\//i.test(value || "");
+  const [mode, setMode] = useState<"file" | "url" | "instagram">(
+    isInstaVal ? "instagram" : (value?.startsWith("http") || value?.startsWith("/images") ? "url" : "file")
+  );
   const [isUploading, setIsUploading] = useState(false);
   const [loadError, setLoadError] = useState(false);
   const fileInputRef = React.useRef<HTMLInputElement | null>(null);
@@ -138,17 +141,29 @@ function ImageUploadField({
   };
 
   const inputId = `file-input-${label.toLowerCase().replace(/[^a-z0-9]/g, "-")}`;
+
+  const isInstagram = /instagram\.com\/(reel|p|tv)\//i.test(value || "");
   const isVideo =
-    (value || "").startsWith("data:video") ||
-    (value || "").startsWith("blob:") ||
-    /\.(mp4|webm|mov|ogg|m4v)(\?.*)?$/i.test(value || "") ||
-    (value || "").includes(".mp4") ||
-    (value || "").includes(".webm") ||
-    (value || "").includes("/video/");
+    !isInstagram && (
+      (value || "").startsWith("data:video") ||
+      (value || "").startsWith("blob:") ||
+      /\.(mp4|webm|mov|ogg|m4v)(\?.*)?$/i.test(value || "") ||
+      (value || "").includes(".mp4") ||
+      (value || "").includes(".webm") ||
+      (value || "").includes("/video/")
+    );
+
+  /** Convert a plain Instagram URL to embed URL */
+  const toEmbedUrl = (url: string) => {
+    if (url.includes("/embed")) return url;
+    const m = url.match(/instagram\.com\/(reel|p|tv)\/([A-Za-z0-9_-]+)/i);
+    if (!m) return url;
+    return `https://www.instagram.com/${m[1]}/${m[2]}/embed/`;
+  };
 
   return (
     <div className="space-y-2">
-      <div className="flex items-center justify-between">
+      <div className="flex items-center justify-between flex-wrap gap-1">
         <label className="block text-xs font-bold text-slate-700">
           {label} {aspectHint && <span className="text-[10px] text-slate-400 font-normal">({aspectHint})</span>}
         </label>
@@ -173,10 +188,37 @@ function ImageUploadField({
           >
             Paste URL
           </button>
+          <button
+            type="button"
+            onClick={() => { setMode("instagram"); onChange(""); }}
+            className={`px-2.5 py-1 rounded-md transition-all flex items-center gap-1 ${
+              mode === "instagram" ? "bg-gradient-to-r from-pink-500 to-purple-600 text-white shadow-2xs font-bold" : "text-slate-500 hover:text-slate-800"
+            }`}
+          >
+            <span>📸</span> Instagram
+          </button>
         </div>
       </div>
 
-      {mode === "url" ? (
+      {mode === "instagram" ? (
+        <div className="space-y-1.5">
+          <div className="flex items-center gap-2 p-3 rounded-xl bg-gradient-to-r from-pink-50 to-purple-50 border border-pink-200">
+            <span className="text-lg">📸</span>
+            <div className="flex-1">
+              <input
+                type="text"
+                placeholder="Paste Instagram Reel / Post URL (e.g. https://www.instagram.com/reel/...)"
+                value={value}
+                onChange={(e) => onChange(e.target.value.trim())}
+                className="w-full px-3 py-2 border border-pink-300 rounded-lg text-xs sm:text-sm outline-none focus:border-pink-500 focus:ring-1 focus:ring-pink-400 font-mono bg-white"
+              />
+            </div>
+          </div>
+          <p className="text-[10px] text-slate-400">
+            📌 Paste any Instagram Reel, Post or IGTV link. It will auto-embed on the site.
+          </p>
+        </div>
+      ) : mode === "url" ? (
         <div className="space-y-1">
           <input
             type="text"
@@ -214,53 +256,84 @@ function ImageUploadField({
 
       {/* Live Preview if value exists */}
       {value && (
-        <div className="flex items-center gap-3 p-2.5 bg-slate-50 border border-slate-200 rounded-xl">
-          <div className="relative w-16 h-16 rounded-lg overflow-hidden border border-slate-200 bg-slate-900 shrink-0 flex items-center justify-center">
-            {isVideo ? (
-              <video
-                src={value}
-                autoPlay
-                loop
-                muted
-                playsInline
-                className="w-full h-full object-cover"
-                onError={() => setLoadError(true)}
-              />
-            ) : (
-              // eslint-disable-next-line @next/next/no-img-element
-              <img
-                src={value}
-                alt="Preview"
-                className="w-full h-full object-cover"
-                onError={() => setLoadError(true)}
-              />
-            )}
-          </div>
-          <div className="flex-1 min-w-0 space-y-0.5">
-            <div className="flex items-center gap-2">
-              <span className={`text-[10px] font-black px-2 py-0.5 rounded-full uppercase tracking-wider ${
-                isVideo ? "bg-purple-100 text-purple-700" : "bg-blue-100 text-blue-700"
-              }`}>
-                {isVideo ? "🎬 Video (Auto-play)" : "🖼️ Image"}
-              </span>
-              {loadError && (
-                <span className="text-[10px] font-bold text-amber-600">
-                  ⚠️ Preview may not load
+        <div className={`flex ${isInstagram ? "flex-col" : "items-center"} gap-3 p-2.5 bg-slate-50 border ${isInstagram ? "border-pink-200 bg-pink-50/30" : "border-slate-200"} rounded-xl`}>
+          {isInstagram ? (
+            /* Instagram embed preview */
+            <div className="w-full space-y-2">
+              <div className="flex items-center justify-between">
+                <span className="text-[10px] font-black px-2 py-0.5 rounded-full uppercase tracking-wider bg-gradient-to-r from-pink-100 to-purple-100 text-pink-700">
+                  📸 Instagram Embed
                 </span>
-              )}
+                <button
+                  type="button"
+                  onClick={() => onChange("")}
+                  className="p-1.5 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                  title="Remove"
+                >
+                  <Trash2 className="w-3.5 h-3.5" />
+                </button>
+              </div>
+              <div className="w-full rounded-xl overflow-hidden border border-pink-200" style={{ height: 420 }}>
+                <iframe
+                  src={toEmbedUrl(value)}
+                  className="w-full h-full"
+                  frameBorder="0"
+                  scrolling="no"
+                  allowTransparency
+                  allow="autoplay; clipboard-write; encrypted-media; picture-in-picture; web-share"
+                />
+              </div>
+              <p className="text-[10px] text-slate-400 font-mono truncate">{value}</p>
             </div>
-            <p className="text-[11px] text-slate-600 font-mono truncate max-w-full">
-              {value.startsWith("data:") ? "Device upload (Optimized Base64)" : value}
-            </p>
-          </div>
-          <button
-            type="button"
-            onClick={() => onChange("")}
-            className="p-2 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
-            title="Remove Media"
-          >
-            <Trash2 className="w-4 h-4" />
-          </button>
+          ) : (
+            /* Image / Video preview */
+            <>
+              <div className="relative w-16 h-16 rounded-lg overflow-hidden border border-slate-200 bg-slate-900 shrink-0 flex items-center justify-center">
+                {isVideo ? (
+                  <video
+                    src={value}
+                    autoPlay
+                    loop
+                    muted
+                    playsInline
+                    className="w-full h-full object-cover"
+                    onError={() => setLoadError(true)}
+                  />
+                ) : (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img
+                    src={value}
+                    alt="Preview"
+                    className="w-full h-full object-cover"
+                    onError={() => setLoadError(true)}
+                  />
+                )}
+              </div>
+              <div className="flex-1 min-w-0 space-y-0.5">
+                <div className="flex items-center gap-2">
+                  <span className={`text-[10px] font-black px-2 py-0.5 rounded-full uppercase tracking-wider ${
+                    isVideo ? "bg-purple-100 text-purple-700" : "bg-blue-100 text-blue-700"
+                  }`}>
+                    {isVideo ? "🎬 Video (Auto-play)" : "🖼️ Image"}
+                  </span>
+                  {loadError && (
+                    <span className="text-[10px] font-bold text-amber-600">⚠️ Preview may not load</span>
+                  )}
+                </div>
+                <p className="text-[11px] text-slate-600 font-mono truncate max-w-full">
+                  {value.startsWith("data:") ? "Device upload (Optimized Base64)" : value}
+                </p>
+              </div>
+              <button
+                type="button"
+                onClick={() => onChange("")}
+                className="p-2 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                title="Remove Media"
+              >
+                <Trash2 className="w-4 h-4" />
+              </button>
+            </>
+          )}
         </div>
       )}
     </div>

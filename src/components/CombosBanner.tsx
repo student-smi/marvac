@@ -15,6 +15,7 @@ import {
 } from "lucide-react";
 import { comboSlides } from "@/data/siteData";
 import { motion, AnimatePresence } from "framer-motion";
+import { isInstagramUrl, isVideoUrl, toInstagramEmbedUrl } from "@/lib/mediaUtils";
 
 export default function CombosBanner() {
   const [currentSlide, setCurrentSlide] = useState(0);
@@ -123,12 +124,21 @@ export default function CombosBanner() {
               <div className="lg:col-span-5 relative h-[320px] sm:h-[400px] lg:h-[460px] flex items-center justify-center mt-6 lg:mt-0">
                 {(() => {
                   const mediaSrc = slide.podiumImage || slide.bannerImage || "/images/complete_routine_podium.jpg";
-                  const isVid =
-                    mediaSrc.startsWith("data:video") ||
-                    mediaSrc.startsWith("blob:") ||
-                    /\.(mp4|webm|mov|ogg|m4v)(\?.*)?$/i.test(mediaSrc) ||
-                    mediaSrc.includes(".mp4") ||
-                    mediaSrc.includes(".webm");
+                  const isInsta = isInstagramUrl(mediaSrc);
+                  const isVid = !isInsta && isVideoUrl(mediaSrc);
+
+                  if (isInsta) {
+                    return (
+                      <iframe
+                        src={toInstagramEmbedUrl(mediaSrc)}
+                        className="w-full h-full rounded-2xl"
+                        frameBorder="0"
+                        scrolling="no"
+                        allowTransparency
+                        allow="autoplay; clipboard-write; encrypted-media; picture-in-picture; web-share"
+                      />
+                    );
+                  }
 
                   if (isVid) {
                     return (

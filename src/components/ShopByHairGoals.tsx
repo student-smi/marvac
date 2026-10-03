@@ -8,6 +8,7 @@ import { products as defaultProducts } from "@/data/products";
 import ProductCard from "./ProductCard";
 import { motion, AnimatePresence } from "framer-motion";
 import { useStoreContent } from "@/context/StoreContentContext";
+import { isInstagramUrl, isVideoUrl, toInstagramEmbedUrl } from "@/lib/mediaUtils";
 
 export default function ShopByHairGoals() {
   const { hairGoals: dynamicGoals, products: dynamicProducts } = useStoreContent();
@@ -22,6 +23,45 @@ export default function ShopByHairGoals() {
   const matchedProducts = productsList
     .filter((p) => p.hairGoals && p.hairGoals.includes(selectedGoal.filterKey))
     .slice(0, 4);
+
+  /** Renders image, video, or Instagram embed for a goal card */
+  const renderGoalMedia = (goal: HairGoal) => {
+    const src = goal.image || "";
+    if (isInstagramUrl(src)) {
+      return (
+        <iframe
+          src={toInstagramEmbedUrl(src)}
+          className="w-full h-full"
+          frameBorder="0"
+          scrolling="no"
+          allowTransparency
+          allow="autoplay; clipboard-write; encrypted-media; picture-in-picture; web-share"
+        />
+      );
+    }
+    if (isVideoUrl(src)) {
+      return (
+        <video
+          src={src}
+          autoPlay
+          loop
+          muted
+          playsInline
+          controls={false}
+          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+        />
+      );
+    }
+    return (
+      <Image
+        src={src || "/images/goal_glass_glow.jpg"}
+        alt={goal.name}
+        fill
+        className="object-cover group-hover:scale-105 transition-transform duration-500"
+        sizes="300px"
+      />
+    );
+  };
 
   return (
     <section className="py-14 sm:py-20 bg-white border-t border-[#E5E7EB] overflow-hidden">
@@ -57,27 +97,7 @@ export default function ShopByHairGoals() {
                 }`}
               >
                 <div className="relative w-full aspect-[4/3] bg-gray-50 overflow-hidden">
-                  {(goal.image || "").endsWith(".mp4") ||
-                  (goal.image || "").endsWith(".webm") ||
-                  (goal.image || "").startsWith("data:video") ? (
-                    <video
-                      src={goal.image}
-                      autoPlay
-                      loop
-                      muted
-                      playsInline
-                      controls={false}
-                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                    />
-                  ) : (
-                    <Image
-                      src={goal.image}
-                      alt={goal.name}
-                      fill
-                      className="object-cover group-hover:scale-105 transition-transform duration-500"
-                      sizes="300px"
-                    />
-                  )}
+                  {renderGoalMedia(goal)}
                   <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-60" />
 
                   {isSelected && (
@@ -117,27 +137,7 @@ export default function ShopByHairGoals() {
                 }`}
               >
                 <div className="relative w-full aspect-[4/3] bg-gray-50 overflow-hidden">
-                  {(goal.image || "").endsWith(".mp4") ||
-                  (goal.image || "").endsWith(".webm") ||
-                  (goal.image || "").startsWith("data:video") ? (
-                    <video
-                      src={goal.image}
-                      autoPlay
-                      loop
-                      muted
-                      playsInline
-                      controls={false}
-                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                    />
-                  ) : (
-                    <Image
-                      src={goal.image}
-                      alt={goal.name}
-                      fill
-                      className="object-cover group-hover:scale-105 transition-transform duration-500"
-                      sizes="300px"
-                    />
-                  )}
+                  {renderGoalMedia(goal)}
                   <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-60" />
 
                   {isSelected && (

@@ -6,6 +6,7 @@ import { ArrowRight, Check, Sparkles, X, SlidersHorizontal } from "lucide-react"
 import { useCart } from "@/context/CartContext";
 import { useStoreContent } from "@/context/StoreContentContext";
 import { motion, AnimatePresence } from "framer-motion";
+import { isInstagramUrl, isVideoUrl, toInstagramEmbedUrl } from "@/lib/mediaUtils";
 
 interface KitDisplayItem {
   id: string;
@@ -128,12 +129,9 @@ export default function BuildYourKit() {
         {/* 2-Column Mobile, 2-Column / 4-Column Desktop Cards Grid matching wireframe */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
           {displayKits.map((kit) => {
-            const isVid =
-              (kit.image || "").startsWith("data:video") ||
-              (kit.image || "").startsWith("blob:") ||
-              /\.(mp4|webm|mov|ogg|m4v)(\?.*)?$/i.test(kit.image || "") ||
-              (kit.image || "").includes(".mp4") ||
-              (kit.image || "").includes(".webm");
+            const src = kit.image || "";
+            const isInsta = isInstagramUrl(src);
+            const isVid = !isInsta && isVideoUrl(src);
 
             return (
               <div
@@ -143,9 +141,18 @@ export default function BuildYourKit() {
                 <div>
                   {/* Kit Image */}
                   <div className="relative w-full aspect-[4/3] rounded-2xl overflow-hidden bg-gradient-to-b from-[#EAF3FF] to-white p-3 mb-4 flex items-center justify-center">
-                    {isVid ? (
+                    {isInsta ? (
+                      <iframe
+                        src={toInstagramEmbedUrl(src)}
+                        className="w-full h-full"
+                        frameBorder="0"
+                        scrolling="no"
+                        allowTransparency
+                        allow="autoplay; clipboard-write; encrypted-media; picture-in-picture; web-share"
+                      />
+                    ) : isVid ? (
                       <video
-                        src={kit.image}
+                        src={src}
                         autoPlay
                         loop
                         muted
@@ -156,7 +163,7 @@ export default function BuildYourKit() {
                     ) : (
                       // eslint-disable-next-line @next/next/no-img-element
                       <img
-                        src={kit.image || "/images/kit_starter_pro.jpg"}
+                        src={src || "/images/kit_starter_pro.jpg"}
                         alt={kit.name}
                         className="w-full h-full object-contain p-2 group-hover:scale-105 transition-transform duration-500"
                         onError={(e) => {
