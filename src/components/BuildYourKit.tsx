@@ -4,9 +4,10 @@ import React, { useState } from "react";
 import Image from "next/image";
 import { ArrowRight, Check, Sparkles, X, SlidersHorizontal } from "lucide-react";
 import { useCart } from "@/context/CartContext";
+import { useStoreContent } from "@/context/StoreContentContext";
 import { motion, AnimatePresence } from "framer-motion";
 
-interface KitItem {
+interface KitDisplayItem {
   id: string;
   name: string;
   itemCountText: string;
@@ -15,55 +16,69 @@ interface KitItem {
   image: string;
   badge: string;
   subtitle: string;
+  items?: string[];
 }
-
-const kitsData: KitItem[] = [
-  {
-    id: "pro-kit",
-    name: "Professional Kit",
-    itemCountText: "5 Products",
-    price: 1999,
-    originalPrice: 2699,
-    image: "/images/hero_podium.png",
-    badge: "MOST POPULAR",
-    subtitle: "H+ Super Hold Spray + texture powder + paddle brush + pins + clips",
-  },
-  {
-    id: "bridal-kit",
-    name: "Bridal Master Kit",
-    itemCountText: "7 Products",
-    price: 2499,
-    originalPrice: 3499,
-    image: "/images/kit_bridal.jpg",
-    badge: "SALON CHOICE",
-    subtitle: "Complete bridal hair suite: shine mist, U-pins, carbon tail comb & padding",
-  },
-  {
-    id: "starter-kit",
-    name: "Starter Styling Kit",
-    itemCountText: "3 Products",
-    price: 1299,
-    originalPrice: 1799,
-    image: "/images/kit_starter.jpg",
-    badge: "DAILY USE",
-    subtitle: "Detangling brush + lightweight styling mousse + core bobby pin box",
-  },
-  {
-    id: "sleek-kit",
-    name: "Sleek Bun Kit",
-    itemCountText: "4 Products",
-    price: 1599,
-    originalPrice: 2199,
-    image: "/images/kit_sleek_bun.jpg",
-    badge: "ESSENTIALS",
-    subtitle: "Anti-frizz hair spray + fine tooth comb + silicone bands + donut bun",
-  },
-];
 
 export default function BuildYourKit() {
   const { addToCart, setIsCartOpen } = useCart();
-  const [selectedKit, setSelectedKit] = useState<KitItem | null>(null);
+  const { customizedKits } = useStoreContent();
+  const [selectedKit, setSelectedKit] = useState<KitDisplayItem | null>(null);
   const [customStep, setCustomStep] = useState(1);
+
+  const displayKits: KitDisplayItem[] = (customizedKits && customizedKits.length > 0)
+    ? customizedKits.map((k) => ({
+        id: k.id,
+        name: k.name,
+        itemCountText: `${k.itemCount || (k.items ? k.items.length : 3)} Products`,
+        price: k.price,
+        originalPrice: k.originalPrice || Math.round(k.price * 1.3),
+        image: k.image || "/images/hero_podium.png",
+        badge: k.badge || "FEATURED",
+        subtitle: k.subtitle || "",
+        items: k.items,
+      }))
+    : [
+        {
+          id: "pro-kit",
+          name: "Professional Kit",
+          itemCountText: "5 Products",
+          price: 1999,
+          originalPrice: 2699,
+          image: "/images/hero_podium.png",
+          badge: "MOST POPULAR",
+          subtitle: "H+ Super Hold Spray + texture powder + paddle brush + pins + clips",
+        },
+        {
+          id: "bridal-kit",
+          name: "Bridal Master Kit",
+          itemCountText: "7 Products",
+          price: 2499,
+          originalPrice: 3499,
+          image: "/images/kit_bridal.jpg",
+          badge: "SALON CHOICE",
+          subtitle: "Complete bridal hair suite: shine mist, U-pins, carbon tail comb & padding",
+        },
+        {
+          id: "starter-kit",
+          name: "Starter Styling Kit",
+          itemCountText: "3 Products",
+          price: 1299,
+          originalPrice: 1799,
+          image: "/images/kit_starter.jpg",
+          badge: "DAILY USE",
+          subtitle: "Detangling brush + lightweight styling mousse + core bobby pin box",
+        },
+        {
+          id: "sleek-kit",
+          name: "Sleek Bun Kit",
+          itemCountText: "4 Products",
+          price: 1599,
+          originalPrice: 2199,
+          image: "/images/kit_sleek_bun.jpg",
+          badge: "ESSENTIALS",
+          subtitle: "Anti-frizz hair spray + fine tooth comb + silicone bands + donut bun",
+        },
+      ];
   const [selectedOptions, setSelectedOptions] = useState<Record<number, string>>({
     1: "Aura Core Professional Styling Set",
     2: "Volumizer Matte Powder 16g",
@@ -72,7 +87,7 @@ export default function BuildYourKit() {
     5: "Aura H+ Super Strong Hold Spray",
   });
 
-  const handleOpenCustomizer = (kit: KitItem) => {
+  const handleOpenCustomizer = (kit: KitDisplayItem) => {
     setSelectedKit(kit);
     setCustomStep(1);
   };
@@ -112,7 +127,7 @@ export default function BuildYourKit() {
 
         {/* 2-Column Mobile, 2-Column / 4-Column Desktop Cards Grid matching wireframe */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
-          {kitsData.map((kit) => (
+          {displayKits.map((kit) => (
             <div
               key={kit.id}
               className="group bg-white rounded-3xl border border-[#E5E7EB] hover:border-[#2445A8]/30 p-5 shadow-xs hover:shadow-xl transition-all duration-300 flex flex-col justify-between"

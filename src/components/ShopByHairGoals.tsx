@@ -3,17 +3,24 @@
 import React, { useState } from "react";
 import Image from "next/image";
 import { Sparkles } from "lucide-react";
-import { hairGoals } from "@/data/goals";
-import { products } from "@/data/products";
+import { hairGoals as defaultHairGoals, HairGoal } from "@/data/goals";
+import { products as defaultProducts } from "@/data/products";
 import ProductCard from "./ProductCard";
 import { motion, AnimatePresence } from "framer-motion";
+import { useStoreContent } from "@/context/StoreContentContext";
 
 export default function ShopByHairGoals() {
-  const [selectedGoal, setSelectedGoal] = useState(hairGoals[0]);
+  const { hairGoals: dynamicGoals, products: dynamicProducts } = useStoreContent();
+  const goalsList = dynamicGoals && dynamicGoals.length > 0 ? dynamicGoals : defaultHairGoals;
+  const productsList = dynamicProducts && dynamicProducts.length > 0 ? dynamicProducts : defaultProducts;
+
+  const [selectedGoalId, setSelectedGoalId] = useState<string>(goalsList[0]?.id || "goal-1");
+
+  const selectedGoal = goalsList.find((g) => g.id === selectedGoalId) || goalsList[0] || defaultHairGoals[0];
 
   // Filter products by selected goal
-  const matchedProducts = products
-    .filter((p) => p.hairGoals.includes(selectedGoal.filterKey))
+  const matchedProducts = productsList
+    .filter((p) => p.hairGoals && p.hairGoals.includes(selectedGoal.filterKey))
     .slice(0, 4);
 
   return (
@@ -37,12 +44,12 @@ export default function ShopByHairGoals() {
       <div className="overflow-hidden w-full relative py-2 mb-10">
         <div className="animate-marquee-cards flex items-stretch gap-4 sm:gap-6 whitespace-nowrap px-4">
           {/* First loop */}
-          {hairGoals.map((goal, idx) => {
-            const isSelected = selectedGoal.id === goal.id;
+          {goalsList.map((goal, idx) => {
+            const isSelected = selectedGoalId === goal.id;
             return (
               <div
                 key={`goal-1-${goal.id}-${idx}`}
-                onClick={() => setSelectedGoal(goal)}
+                onClick={() => setSelectedGoalId(goal.id)}
                 className={`group cursor-pointer flex-none w-[240px] sm:w-[300px] rounded-3xl overflow-hidden border transition-all duration-300 flex flex-col justify-between whitespace-normal select-none ${
                   isSelected
                     ? "border-[#142B70] ring-3 ring-[#142B70]/15 shadow-xl bg-white scale-[1.02]"
@@ -83,12 +90,12 @@ export default function ShopByHairGoals() {
           })}
 
           {/* Duplicated loop for infinite unbroken motion */}
-          {hairGoals.map((goal, idx) => {
-            const isSelected = selectedGoal.id === goal.id;
+          {goalsList.map((goal, idx) => {
+            const isSelected = selectedGoalId === goal.id;
             return (
               <div
                 key={`goal-2-${goal.id}-${idx}`}
-                onClick={() => setSelectedGoal(goal)}
+                onClick={() => setSelectedGoalId(goal.id)}
                 className={`group cursor-pointer flex-none w-[240px] sm:w-[300px] rounded-3xl overflow-hidden border transition-all duration-300 flex flex-col justify-between whitespace-normal select-none ${
                   isSelected
                     ? "border-[#142B70] ring-3 ring-[#142B70]/15 shadow-xl bg-white scale-[1.02]"

@@ -8,6 +8,8 @@ import { ProcessStep, processStorySteps as seedProcessSteps } from "@/data/proce
 import { StoryReel, storyReels as seedStoryReels } from "@/data/stories";
 import { ExhibitionItem, exhibitions as seedExhibitions } from "@/data/exhibitions";
 import { ProductStoryItem, productStories as seedProductStories } from "@/data/productStory";
+import { CustomizedKit, customizedKits as seedCustomizedKits } from "@/data/kits";
+import { HairGoal, hairGoals as seedHairGoals } from "@/data/goals";
 
 export interface User {
   id: string;
@@ -82,6 +84,21 @@ export interface AnnouncementItem {
   link: string;
 }
 
+export interface TransitionBannerSettings {
+  badge: string;
+  headline: string;
+  tagline?: string;
+  subtitle?: string;
+  mediaType: "image" | "video";
+  mediaUrl: string;
+  buttonText?: string;
+  buttonLink?: string;
+  ctaText?: string;
+  ctaLink?: string;
+  accentColor?: string;
+  enabled?: boolean;
+}
+
 export interface BrandSettings {
   name: string;
   legalName: string;
@@ -110,10 +127,25 @@ export interface DBData {
   productStories: ProductStoryItem[];
   storyReels: StoryReel[];
   exhibitions: ExhibitionItem[];
+  customizedKits: CustomizedKit[];
+  hairGoals: HairGoal[];
+  transitionBanner: TransitionBannerSettings;
 }
 
 const DATA_DIR = path.join(process.cwd(), ".data");
 const DB_FILE = path.join(DATA_DIR, "db.json");
+
+const initialTransitionBanner: TransitionBannerSettings = {
+  badge: "TRUSTED BY",
+  headline: "35L + PEOPLE",
+  tagline: "Voted India's #1 Salon Styling Brand & Professional Student Kits",
+  mediaType: "image",
+  mediaUrl: "/images/mosaic_filmstrip.jpg",
+  buttonText: "SHOP WITH AI",
+  buttonLink: "/category/curated-kits",
+  accentColor: "#34d399",
+  enabled: true,
+};
 
 const initialHeroCampaigns: HeroCampaign[] = [
   {
@@ -184,6 +216,9 @@ const initialData: DBData = {
   productStories: seedProductStories,
   storyReels: seedStoryReels,
   exhibitions: seedExhibitions,
+  customizedKits: seedCustomizedKits,
+  hairGoals: seedHairGoals,
+  transitionBanner: initialTransitionBanner,
 };
 
 let globalMemoryDb: DBData | null = null;
@@ -204,6 +239,9 @@ function sanitizeDb(parsed: any): DBData {
     productStories: Array.isArray(parsed?.productStories) ? parsed.productStories : seedProductStories,
     storyReels: Array.isArray(parsed?.storyReels) ? parsed.storyReels : seedStoryReels,
     exhibitions: Array.isArray(parsed?.exhibitions) ? parsed.exhibitions : seedExhibitions,
+    customizedKits: Array.isArray(parsed?.customizedKits) ? parsed.customizedKits : seedCustomizedKits,
+    hairGoals: Array.isArray(parsed?.hairGoals) ? parsed.hairGoals : seedHairGoals,
+    transitionBanner: parsed?.transitionBanner || initialTransitionBanner,
   };
 }
 
@@ -825,6 +863,100 @@ export const store = {
     };
   },
 
+  // Customized Kits
+  getAllKits: async () => {
+    const db = await readDbAsync();
+    return db.customizedKits || seedCustomizedKits;
+  },
+  createKit: async (kitData: Omit<CustomizedKit, "id">) => {
+    const db = await readDbAsync();
+    const newKit: CustomizedKit = {
+      id: `kit-${Date.now()}`,
+      ...kitData,
+      itemCount: Number(kitData.itemCount || (kitData.items?.length ?? 1)),
+      price: Number(kitData.price || 999),
+      originalPrice: Number(kitData.originalPrice || kitData.price || 1499),
+    };
+    db.customizedKits = [newKit, ...(db.customizedKits || seedCustomizedKits)];
+    await writeDbAsync(db);
+    return newKit;
+  },
+  updateKit: async (id: string, updates: Partial<CustomizedKit>) => {
+    const db = await readDbAsync();
+    const list = db.customizedKits || seedCustomizedKits;
+    const index = list.findIndex((k) => k.id === id);
+    if (index === -1) return null;
+    if (updates.price !== undefined) updates.price = Number(updates.price);
+    if (updates.originalPrice !== undefined) updates.originalPrice = Number(updates.originalPrice);
+    if (updates.itemCount !== undefined) updates.itemCount = Number(updates.itemCount);
+    list[index] = { ...list[index], ...updates };
+    db.customizedKits = list;
+    await writeDbAsync(db);
+    return list[index];
+  },
+  deleteKit: async (id: string) => {
+    const db = await readDbAsync();
+    const list = db.customizedKits || seedCustomizedKits;
+    const before = list.length;
+    db.customizedKits = list.filter((k) => k.id !== id);
+    if (db.customizedKits.length !== before) {
+      await writeDbAsync(db);
+      return true;
+    }
+    return false;
+  },
+
+  // Hair Goals
+  getAllHairGoals: async () => {
+    const db = await readDbAsync();
+    return db.hairGoals || seedHairGoals;
+  },
+  createHairGoal: async (goalData: Omit<HairGoal, "id">) => {
+    const db = await readDbAsync();
+    const newGoal: HairGoal = {
+      id: `goal-${Date.now()}`,
+      ...goalData,
+      title: goalData.title || goalData.name,
+      filterKey: goalData.filterKey || goalData.name.toLowerCase().replace(/[^a-z0-9]/g, "-"),
+    };
+    db.hairGoals = [...(db.hairGoals || seedHairGoals), newGoal];
+    await writeDbAsync(db);
+    return newGoal;
+  },
+  updateHairGoal: async (id: string, updates: Partial<HairGoal>) => {
+    const db = await readDbAsync();
+    const list = db.hairGoals || seedHairGoals;
+    const index = list.findIndex((g) => g.id === id);
+    if (index === -1) return null;
+    list[index] = { ...list[index], ...updates };
+    db.hairGoals = list;
+    await writeDbAsync(db);
+    return list[index];
+  },
+  deleteHairGoal: async (id: string) => {
+    const db = await readDbAsync();
+    const list = db.hairGoals || seedHairGoals;
+    const before = list.length;
+    db.hairGoals = list.filter((g) => g.id !== id);
+    if (db.hairGoals.length !== before) {
+      await writeDbAsync(db);
+      return true;
+    }
+    return false;
+  },
+
+  // Video / Transition Banner ("TRUSTED BY 35L + PEOPLE")
+  getTransitionBanner: async () => {
+    const db = await readDbAsync();
+    return db.transitionBanner || initialTransitionBanner;
+  },
+  updateTransitionBanner: async (updates: Partial<TransitionBannerSettings>) => {
+    const db = await readDbAsync();
+    db.transitionBanner = { ...(db.transitionBanner || initialTransitionBanner), ...updates };
+    await writeDbAsync(db);
+    return db.transitionBanner;
+  },
+
   // Combined Landing Page Payload
   getLandingPageData: async () => {
     const db = await readDbAsync();
@@ -840,6 +972,9 @@ export const store = {
       storyReels: db.storyReels || seedStoryReels,
       exhibitions: db.exhibitions || seedExhibitions,
       products: db.products || seedProducts,
+      customizedKits: db.customizedKits || seedCustomizedKits,
+      hairGoals: db.hairGoals || seedHairGoals,
+      transitionBanner: db.transitionBanner || initialTransitionBanner,
     };
   },
 
@@ -881,6 +1016,9 @@ export const store = {
         productStories: [],
         storyReels: [],
         exhibitions: [],
+        customizedKits: [],
+        hairGoals: [],
+        transitionBanner: initialTransitionBanner,
       };
     } else {
       freshData = {
@@ -903,6 +1041,9 @@ export const store = {
         productStories: seedProductStories,
         storyReels: seedStoryReels,
         exhibitions: seedExhibitions,
+        customizedKits: seedCustomizedKits,
+        hairGoals: seedHairGoals,
+        transitionBanner: initialTransitionBanner,
       };
     }
     await writeDbAsync(freshData);

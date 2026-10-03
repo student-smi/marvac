@@ -1,7 +1,7 @@
 "use client";
 
 import React, { createContext, useContext, useState, useEffect } from "react";
-import { HeroCampaign, AnnouncementItem, BrandSettings } from "@/lib/store";
+import { HeroCampaign, AnnouncementItem, BrandSettings, TransitionBannerSettings } from "@/lib/store";
 import { Category, categories as seedCategories } from "@/data/categories";
 import { Testimonial, testimonials as seedTestimonials } from "@/data/testimonials";
 import { FAQItem, faqs as seedFaqs } from "@/data/faqs";
@@ -10,6 +10,8 @@ import { Product, products as seedProducts } from "@/data/products";
 import { StoryReel, storyReels as seedStoryReels } from "@/data/stories";
 import { ExhibitionItem, exhibitions as seedExhibitions } from "@/data/exhibitions";
 import { ProductStoryItem, productStories as seedProductStories } from "@/data/productStory";
+import { CustomizedKit, customizedKits as seedCustomizedKits } from "@/data/kits";
+import { HairGoal, hairGoals as seedHairGoals } from "@/data/goals";
 
 interface ContentContextType {
   heroCampaigns: HeroCampaign[];
@@ -23,6 +25,9 @@ interface ContentContextType {
   productStories: ProductStoryItem[];
   storyReels: StoryReel[];
   exhibitions: ExhibitionItem[];
+  customizedKits: CustomizedKit[];
+  hairGoals: HairGoal[];
+  transitionBanner: TransitionBannerSettings;
   refreshContent: () => Promise<void>;
   isLoading: boolean;
 }
@@ -78,6 +83,16 @@ const defaultBrandSettings: BrandSettings = {
   address: "Aura House, Level 4, Bandra Kurla Complex, Mumbai, Maharashtra 400051",
 };
 
+const defaultTransitionBanner: TransitionBannerSettings = {
+  badge: "TRUSTED BY",
+  headline: "35L + PEOPLE",
+  subtitle: "Salons & stylists across India trust Aura for unshakeable hold and radiant finish.",
+  mediaType: "image",
+  mediaUrl: "/images/mosaic_filmstrip.jpg",
+  ctaText: "SHOP WITH AI",
+  ctaLink: "/category/hair-styling-hold",
+};
+
 const ContentContext = createContext<ContentContextType>({
   heroCampaigns: defaultHeroCampaigns,
   announcements: defaultAnnouncements,
@@ -90,6 +105,9 @@ const ContentContext = createContext<ContentContextType>({
   productStories: seedProductStories,
   storyReels: seedStoryReels,
   exhibitions: seedExhibitions,
+  customizedKits: seedCustomizedKits,
+  hairGoals: seedHairGoals,
+  transitionBanner: defaultTransitionBanner,
   refreshContent: async () => {},
   isLoading: false,
 });
@@ -106,6 +124,9 @@ export function ContentProvider({ children }: { children: React.ReactNode }) {
   const [productStories, setProductStories] = useState<ProductStoryItem[]>(seedProductStories);
   const [storyReels, setStoryReels] = useState<StoryReel[]>(seedStoryReels);
   const [exhibitions, setExhibitions] = useState<ExhibitionItem[]>(seedExhibitions);
+  const [customizedKits, setCustomizedKits] = useState<CustomizedKit[]>(seedCustomizedKits);
+  const [hairGoals, setHairGoals] = useState<HairGoal[]>(seedHairGoals);
+  const [transitionBanner, setTransitionBanner] = useState<TransitionBannerSettings>(defaultTransitionBanner);
   const [isLoading, setIsLoading] = useState(false);
 
   const fetchContent = async () => {
@@ -126,6 +147,9 @@ export function ContentProvider({ children }: { children: React.ReactNode }) {
         if (d.productStories && d.productStories.length > 0) setProductStories(d.productStories);
         if (d.storyReels && d.storyReels.length > 0) setStoryReels(d.storyReels);
         if (d.exhibitions && d.exhibitions.length > 0) setExhibitions(d.exhibitions);
+        if (d.customizedKits && d.customizedKits.length > 0) setCustomizedKits(d.customizedKits);
+        if (d.hairGoals && d.hairGoals.length > 0) setHairGoals(d.hairGoals);
+        if (d.transitionBanner) setTransitionBanner(d.transitionBanner);
       }
     } catch (e) {
       console.warn("Failed to fetch dynamic content, using defaults:", e);
@@ -152,6 +176,9 @@ export function ContentProvider({ children }: { children: React.ReactNode }) {
         productStories,
         storyReels,
         exhibitions,
+        customizedKits,
+        hairGoals,
+        transitionBanner,
         refreshContent: fetchContent,
         isLoading,
       }}

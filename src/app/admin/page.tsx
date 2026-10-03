@@ -41,7 +41,7 @@ import {
   UploadCloud,
 } from "lucide-react";
 import AuraLogo from "@/components/AuraLogo";
-import { Order, Coupon, HeroCampaign, AnnouncementItem, BrandSettings } from "@/lib/store";
+import { Order, Coupon, HeroCampaign, AnnouncementItem, BrandSettings, TransitionBannerSettings } from "@/lib/store";
 import { Product } from "@/data/products";
 import { Category } from "@/data/categories";
 import { Testimonial } from "@/data/testimonials";
@@ -50,6 +50,8 @@ import { ProcessStep } from "@/data/process";
 import { StoryReel } from "@/data/stories";
 import { ExhibitionItem } from "@/data/exhibitions";
 import { ProductStoryItem } from "@/data/productStory";
+import { CustomizedKit } from "@/data/kits";
+import { HairGoal } from "@/data/goals";
 
 const compressImageFile = (file: File): Promise<string> => {
   return new Promise((resolve, reject) => {
@@ -201,6 +203,9 @@ export default function AdminDashboardPage() {
     | "overview"
     | "products"
     | "hero"
+    | "transitionBanner"
+    | "kits"
+    | "hairGoals"
     | "announcements"
     | "process"
     | "productStories"
@@ -213,6 +218,8 @@ export default function AdminDashboardPage() {
     | "coupons"
     | "settings"
   >("overview");
+
+  const [adminNavGroup, setAdminNavGroup] = useState<"all" | "catalog" | "branding" | "experience">("all");
 
   // State
   const [stats, setStats] = useState<any>({
@@ -236,6 +243,19 @@ export default function AdminDashboardPage() {
   const [productStories, setProductStories] = useState<ProductStoryItem[]>([]);
   const [storyReels, setStoryReels] = useState<StoryReel[]>([]);
   const [exhibitions, setExhibitions] = useState<ExhibitionItem[]>([]);
+  const [kits, setKits] = useState<CustomizedKit[]>([]);
+  const [hairGoals, setHairGoals] = useState<HairGoal[]>([]);
+  const [transitionBanner, setTransitionBanner] = useState<TransitionBannerSettings>({
+    badge: "TRUSTED BY",
+    headline: "35L + PEOPLE",
+    subtitle: "Salons & stylists across India trust Aura for unshakeable hold and radiant finish.",
+    mediaType: "image",
+    mediaUrl: "/images/mosaic_filmstrip.jpg",
+    ctaText: "SHOP WITH AI",
+    ctaLink: "/category/hair-styling-hold",
+  });
+  const [isSavingBanner, setIsSavingBanner] = useState(false);
+
   const [brandSettings, setBrandSettings] = useState<BrandSettings>({
     name: "AURA BEAUTY",
     legalName: "Aura Beauty Laboratories Pvt Ltd",
@@ -247,6 +267,32 @@ export default function AdminDashboardPage() {
     supportPhone: "+91 98765 43210",
     whatsappNumber: "919876543210",
     address: "Aura House, Level 4, Bandra Kurla Complex, Mumbai, Maharashtra 400051",
+  });
+
+  // Customized Kit Modal State
+  const [isAddKitOpen, setIsAddKitOpen] = useState(false);
+  const [editingKit, setEditingKit] = useState<CustomizedKit | null>(null);
+  const [newKit, setNewKit] = useState({
+    name: "",
+    subtitle: "",
+    itemCount: "3",
+    price: "1299",
+    originalPrice: "1799",
+    image: "/images/kit_starter.jpg",
+    badge: "MOST POPULAR",
+    items: "Detangling Pro Brush, Hydra Mousse 180ml, Silk Hold Mist",
+  });
+
+  // Hair Goal Modal State
+  const [isAddGoalOpen, setIsAddGoalOpen] = useState(false);
+  const [editingGoal, setEditingGoal] = useState<HairGoal | null>(null);
+  const [newGoal, setNewGoal] = useState({
+    name: "",
+    title: "",
+    tagline: "",
+    badge: "HOLD",
+    image: "/images/process_05_hspray.png",
+    filterKey: "hold",
   });
 
   const [loading, setLoading] = useState(true);
@@ -675,6 +721,62 @@ export default function AdminDashboardPage() {
     setIsAddCouponOpen(true);
   };
 
+  const handleOpenAddKit = () => {
+    setEditingKit(null);
+    setNewKit({
+      name: "",
+      subtitle: "",
+      itemCount: "3",
+      price: "1299",
+      originalPrice: "1799",
+      image: "/images/kit_starter.jpg",
+      badge: "MOST POPULAR",
+      items: "Detangling Pro Brush, Hydra Mousse 180ml, Silk Hold Mist",
+    });
+    setIsAddKitOpen(true);
+  };
+
+  const handleOpenEditKit = (kit: CustomizedKit) => {
+    setEditingKit(kit);
+    setNewKit({
+      name: kit.name || "",
+      subtitle: kit.subtitle || "",
+      itemCount: String(kit.itemCount || (kit.items ? kit.items.length : 3)),
+      price: String(kit.price || 1299),
+      originalPrice: String(kit.originalPrice || 1799),
+      image: kit.image || "/images/kit_starter.jpg",
+      badge: kit.badge || "MOST POPULAR",
+      items: Array.isArray(kit.items) ? kit.items.join(", ") : "",
+    });
+    setIsAddKitOpen(true);
+  };
+
+  const handleOpenAddGoal = () => {
+    setEditingGoal(null);
+    setNewGoal({
+      name: "",
+      title: "",
+      tagline: "",
+      badge: "HOLD",
+      image: "/images/process_05_hspray.png",
+      filterKey: "hold",
+    });
+    setIsAddGoalOpen(true);
+  };
+
+  const handleOpenEditGoal = (goal: HairGoal) => {
+    setEditingGoal(goal);
+    setNewGoal({
+      name: goal.name || "",
+      title: goal.title || goal.name || "",
+      tagline: goal.tagline || "",
+      badge: goal.badge || "HOLD",
+      image: goal.image || "/images/process_05_hspray.png",
+      filterKey: goal.filterKey || "hold",
+    });
+    setIsAddGoalOpen(true);
+  };
+
   const showNotification = (msg: string) => {
     setActionSuccess(msg);
     setTimeout(() => setActionSuccess(""), 4000);
@@ -697,38 +799,47 @@ export default function AdminDashboardPage() {
         prodStoryRes,
         storiesRes,
         exRes,
+        kitsRes,
+        goalsRes,
+        bannerRes,
       ] = await Promise.all([
-        fetch("/api/admin/stats").then((r) => r.json()),
-        fetch("/api/admin/products").then((r) => r.json()),
-        fetch("/api/admin/orders").then((r) => r.json()),
-        fetch("/api/admin/coupons").then((r) => r.json()),
-        fetch("/api/admin/content").then((r) => r.json()),
-        fetch("/api/admin/hero").then((r) => r.json()),
-        fetch("/api/admin/categories").then((r) => r.json()),
-        fetch("/api/admin/testimonials").then((r) => r.json()),
-        fetch("/api/admin/faqs").then((r) => r.json()),
-        fetch("/api/admin/process").then((r) => r.json()),
-        fetch("/api/admin/product-stories").then((r) => r.json()),
-        fetch("/api/admin/stories").then((r) => r.json()),
-        fetch("/api/admin/exhibitions").then((r) => r.json()),
+        fetch("/api/admin/stats").then((r) => r.json()).catch(() => ({})),
+        fetch("/api/admin/products").then((r) => r.json()).catch(() => ({})),
+        fetch("/api/admin/orders").then((r) => r.json()).catch(() => ({})),
+        fetch("/api/admin/coupons").then((r) => r.json()).catch(() => ({})),
+        fetch("/api/admin/content").then((r) => r.json()).catch(() => ({})),
+        fetch("/api/admin/hero").then((r) => r.json()).catch(() => ({})),
+        fetch("/api/admin/categories").then((r) => r.json()).catch(() => ({})),
+        fetch("/api/admin/testimonials").then((r) => r.json()).catch(() => ({})),
+        fetch("/api/admin/faqs").then((r) => r.json()).catch(() => ({})),
+        fetch("/api/admin/process").then((r) => r.json()).catch(() => ({})),
+        fetch("/api/admin/product-stories").then((r) => r.json()).catch(() => ({})),
+        fetch("/api/admin/stories").then((r) => r.json()).catch(() => ({})),
+        fetch("/api/admin/exhibitions").then((r) => r.json()).catch(() => ({})),
+        fetch("/api/admin/kits").then((r) => r.json()).catch(() => []),
+        fetch("/api/admin/hair-goals").then((r) => r.json()).catch(() => []),
+        fetch("/api/admin/transition-banner").then((r) => r.json()).catch(() => null),
       ]);
 
-      if (statsRes.success) setStats(statsRes.stats);
-      if (prodRes.success) setProducts(prodRes.products);
-      if (ordRes.success) setOrders(ordRes.orders);
-      if (cpnRes.success) setCoupons(cpnRes.coupons);
-      if (contentRes.success && contentRes.data) {
+      if (statsRes?.success) setStats(statsRes.stats);
+      if (prodRes?.success) setProducts(prodRes.products);
+      if (ordRes?.success) setOrders(ordRes.orders);
+      if (cpnRes?.success) setCoupons(cpnRes.coupons);
+      if (contentRes?.success && contentRes.data) {
         setAnnouncements(contentRes.data.announcementItems || []);
         if (contentRes.data.brandSettings) setBrandSettings(contentRes.data.brandSettings);
       }
-      if (heroRes.success) setHeroSlides(heroRes.heroCampaigns);
-      if (catRes.success) setCategories(catRes.categories);
-      if (testRes.success) setTestimonials(testRes.testimonials);
-      if (faqRes.success) setFaqs(faqRes.faqs);
-      if (processRes.success) setProcessSteps(processRes.processSteps);
-      if (prodStoryRes.success) setProductStories(prodStoryRes.productStories);
-      if (storiesRes.success) setStoryReels(storiesRes.storyReels);
-      if (exRes.success) setExhibitions(exRes.exhibitions);
+      if (heroRes?.success) setHeroSlides(heroRes.heroCampaigns);
+      if (catRes?.success) setCategories(catRes.categories);
+      if (testRes?.success) setTestimonials(testRes.testimonials);
+      if (faqRes?.success) setFaqs(faqRes.faqs);
+      if (processRes?.success) setProcessSteps(processRes.processSteps);
+      if (prodStoryRes?.success) setProductStories(prodStoryRes.productStories);
+      if (storiesRes?.success) setStoryReels(storiesRes.storyReels);
+      if (exRes?.success) setExhibitions(exRes.exhibitions);
+      if (Array.isArray(kitsRes)) setKits(kitsRes);
+      if (Array.isArray(goalsRes)) setHairGoals(goalsRes);
+      if (bannerRes && bannerRes.headline) setTransitionBanner(bannerRes);
     } catch (err) {
       console.error("Failed to load admin data", err);
     } finally {
@@ -1344,6 +1455,146 @@ export default function AdminDashboardPage() {
     }
   };
 
+  // Customized Kits CRUD
+  const handleSaveKit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    try {
+      const payload = {
+        name: newKit.name,
+        subtitle: newKit.subtitle,
+        itemCount: Number(newKit.itemCount) || 3,
+        price: Number(newKit.price) || 999,
+        originalPrice: Number(newKit.originalPrice) || 1499,
+        image: newKit.image,
+        badge: newKit.badge,
+        items: newKit.items.split(",").map((s) => s.trim()).filter(Boolean),
+      };
+
+      if (editingKit) {
+        const res = await fetch("/api/admin/kits", {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ id: editingKit.id, ...payload }),
+        });
+        const data = await res.json();
+        if (data.id) {
+          setIsAddKitOpen(false);
+          setEditingKit(null);
+          showNotification("Customized Kit updated successfully!");
+          fetchAllAdminData();
+        }
+      } else {
+        const res = await fetch("/api/admin/kits", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload),
+        });
+        const data = await res.json();
+        if (data.id) {
+          setIsAddKitOpen(false);
+          showNotification("New Customized Kit added!");
+          fetchAllAdminData();
+        }
+      }
+    } catch {
+      alert("Failed to save kit");
+    }
+  };
+
+  const handleDeleteKit = async (id: string) => {
+    if (!confirm("Are you sure you want to delete this kit?")) return;
+    try {
+      const res = await fetch(`/api/admin/kits?id=${id}`, { method: "DELETE" });
+      const data = await res.json();
+      if (data.success) {
+        showNotification("Kit deleted successfully");
+        fetchAllAdminData();
+      }
+    } catch {
+      alert("Failed to delete kit");
+    }
+  };
+
+  // Hair Goals CRUD
+  const handleSaveGoal = async (e: React.FormEvent) => {
+    e.preventDefault();
+    try {
+      const payload = {
+        name: newGoal.name,
+        title: newGoal.title || newGoal.name,
+        tagline: newGoal.tagline,
+        badge: newGoal.badge,
+        image: newGoal.image,
+        filterKey: newGoal.filterKey || "hold",
+      };
+
+      if (editingGoal) {
+        const res = await fetch("/api/admin/hair-goals", {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ id: editingGoal.id, ...payload }),
+        });
+        const data = await res.json();
+        if (data.id) {
+          setIsAddGoalOpen(false);
+          setEditingGoal(null);
+          showNotification("Hair goal updated!");
+          fetchAllAdminData();
+        }
+      } else {
+        const res = await fetch("/api/admin/hair-goals", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload),
+        });
+        const data = await res.json();
+        if (data.id) {
+          setIsAddGoalOpen(false);
+          showNotification("Hair goal created!");
+          fetchAllAdminData();
+        }
+      }
+    } catch {
+      alert("Failed to save hair goal");
+    }
+  };
+
+  const handleDeleteGoal = async (id: string) => {
+    if (!confirm("Are you sure you want to delete this hair goal?")) return;
+    try {
+      const res = await fetch(`/api/admin/hair-goals?id=${id}`, { method: "DELETE" });
+      const data = await res.json();
+      if (data.success) {
+        showNotification("Hair goal deleted");
+        fetchAllAdminData();
+      }
+    } catch {
+      alert("Failed to delete hair goal");
+    }
+  };
+
+  // Transition Banner Video/Media Handler
+  const handleSaveTransitionBanner = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsSavingBanner(true);
+    try {
+      const res = await fetch("/api/admin/transition-banner", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(transitionBanner),
+      });
+      const data = await res.json();
+      if (data && data.headline) {
+        showNotification("Video transition banner updated successfully!");
+        fetchAllAdminData();
+      }
+    } catch {
+      alert("Failed to save transition banner");
+    } finally {
+      setIsSavingBanner(false);
+    }
+  };
+
   const handleResetData = async (mode: "seed" | "wipe") => {
     const confirmMsg =
       mode === "wipe"
@@ -1442,41 +1693,73 @@ export default function AdminDashboardPage() {
 
       {/* Main Container */}
       <div className="max-w-[1560px] mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {/* Navigation Tabs Bar */}
-        <div className="flex items-center gap-2 overflow-x-auto pb-4 mb-8 border-b border-slate-200 scrollbar-none">
-          {[
-            { id: "overview", label: "Overview", icon: Layers },
-            { id: "products", label: `Products (${products.length})`, icon: Package },
-            { id: "hero", label: `Hero Banners (${heroSlides.length})`, icon: ImageIcon },
-            { id: "announcements", label: `Announcements (${announcements.length})`, icon: Megaphone },
-            { id: "process", label: `Our Process (${processSteps.length})`, icon: Activity },
-            { id: "productStories", label: `Product Story (${productStories.length})`, icon: BookOpen },
-            { id: "stories", label: `Shop The Stories (${storyReels.length})`, icon: Video },
-            { id: "exhibitions", label: `Exhibitions (${exhibitions.length})`, icon: Landmark },
-            { id: "categories", label: `Categories (${categories.length})`, icon: Tag },
-            { id: "testimonials", label: `Reviews (${testimonials.length})`, icon: MessageSquare },
-            { id: "faqs", label: `FAQs (${faqs.length})`, icon: HelpCircle },
-            { id: "orders", label: `Orders (${orders.length})`, icon: ShoppingCart },
-            { id: "coupons", label: `Coupons (${coupons.length})`, icon: Sparkles },
-            { id: "settings", label: "Settings", icon: Settings },
-          ].map((tab) => {
-            const Icon = tab.icon;
-            const isActive = activeTab === tab.id;
-            return (
+        {/* Categorized Admin Navigation Bar */}
+        <div className="space-y-3 mb-8">
+          {/* Group Filter Pills */}
+          <div className="flex items-center gap-2 overflow-x-auto pb-1 scrollbar-none">
+            {[
+              { id: "all", label: "All Sections" },
+              { id: "catalog", label: "🛒 Store & Catalog" },
+              { id: "branding", label: "🎨 Hero & Branding" },
+              { id: "experience", label: "✨ Kits & Dynamic Content" },
+            ].map((group) => (
               <button
-                key={tab.id}
-                onClick={() => setActiveTab(tab.id as any)}
-                className={`px-3.5 py-2.5 rounded-xl text-xs sm:text-sm font-bold flex items-center gap-1.5 whitespace-nowrap transition-all duration-200 ${
-                  isActive
-                    ? "bg-[#142B70] text-white shadow-md shadow-blue-900/10"
-                    : "text-slate-600 hover:text-slate-900 hover:bg-slate-200/60"
+                key={group.id}
+                onClick={() => setAdminNavGroup(group.id as any)}
+                className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all whitespace-nowrap ${
+                  adminNavGroup === group.id
+                    ? "bg-[#142B70] text-white shadow-sm"
+                    : "bg-white text-slate-600 border border-slate-200 hover:bg-slate-50"
                 }`}
               >
-                <Icon className={`w-4 h-4 ${isActive ? "text-sky-300" : "text-slate-400"}`} />
-                <span>{tab.label}</span>
+                {group.label}
               </button>
-            );
-          })}
+            ))}
+          </div>
+
+          {/* Navigation Tabs Bar */}
+          <div className="flex items-center gap-2 overflow-x-auto pb-3 border-b border-slate-200 scrollbar-none">
+            {[
+              { id: "overview", label: "Overview", icon: Layers, group: "catalog" },
+              { id: "products", label: `Products (${products.length})`, icon: Package, group: "catalog" },
+              { id: "categories", label: `Categories (${categories.length})`, icon: Tag, group: "catalog" },
+              { id: "orders", label: `Orders (${orders.length})`, icon: ShoppingCart, group: "catalog" },
+              { id: "coupons", label: `Coupons (${coupons.length})`, icon: Sparkles, group: "catalog" },
+
+              { id: "hero", label: `Hero Banners (${heroSlides.length})`, icon: ImageIcon, group: "branding" },
+              { id: "transitionBanner", label: "Video Banner (35L+)", icon: Video, group: "branding" },
+              { id: "announcements", label: `Announcements (${announcements.length})`, icon: Megaphone, group: "branding" },
+              { id: "settings", label: "Store Settings", icon: Settings, group: "branding" },
+
+              { id: "kits", label: `Customized Kits (${kits.length})`, icon: Package, group: "experience" },
+              { id: "hairGoals", label: `Hair Goals (${hairGoals.length})`, icon: Sliders, group: "experience" },
+              { id: "process", label: `Our Process (${processSteps.length})`, icon: Activity, group: "experience" },
+              { id: "productStories", label: `Product Story (${productStories.length})`, icon: BookOpen, group: "experience" },
+              { id: "stories", label: `Video Reels (${storyReels.length})`, icon: Play, group: "experience" },
+              { id: "exhibitions", label: `Exhibitions (${exhibitions.length})`, icon: Landmark, group: "experience" },
+              { id: "testimonials", label: `Reviews (${testimonials.length})`, icon: MessageSquare, group: "experience" },
+              { id: "faqs", label: `FAQs (${faqs.length})`, icon: HelpCircle, group: "experience" },
+            ]
+              .filter((tab) => adminNavGroup === "all" || tab.group === adminNavGroup)
+              .map((tab) => {
+                const Icon = tab.icon;
+                const isActive = activeTab === tab.id;
+                return (
+                  <button
+                    key={tab.id}
+                    onClick={() => setActiveTab(tab.id as any)}
+                    className={`px-3.5 py-2.5 rounded-xl text-xs sm:text-sm font-bold flex items-center gap-1.5 whitespace-nowrap transition-all duration-200 ${
+                      isActive
+                        ? "bg-[#142B70] text-white shadow-md shadow-blue-900/10 ring-2 ring-[#142B70]/20"
+                        : "text-slate-600 hover:text-slate-900 hover:bg-slate-200/60 bg-white border border-slate-100"
+                    }`}
+                  >
+                    <Icon className={`w-4 h-4 ${isActive ? "text-sky-300" : "text-slate-400"}`} />
+                    <span>{tab.label}</span>
+                  </button>
+                );
+              })}
+          </div>
         </div>
 
         {/* TAB 1: OVERVIEW */}
@@ -2513,6 +2796,352 @@ export default function AdminDashboardPage() {
             </form>
           </div>
         )}
+
+        {/* TAB: VIDEO / TRANSITION BANNER (Trusted by 35L+) */}
+        {activeTab === "transitionBanner" && (
+          <div className="space-y-6 animate-in fade-in duration-300">
+            <div>
+              <h3 className="text-lg font-bold text-slate-900">Cinematic Video & Transition Banner ("Trusted by 35L+ People")</h3>
+              <p className="text-xs text-slate-500">
+                Control the high-impact media section displayed on the homepage with custom video or background image, badge, and AI button.
+              </p>
+            </div>
+
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+              {/* Form Controls */}
+              <form
+                onSubmit={handleSaveTransitionBanner}
+                className="lg:col-span-7 bg-white p-6 sm:p-7 rounded-2xl border border-slate-200/90 shadow-sm space-y-4"
+              >
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-xs font-bold uppercase tracking-wider text-slate-700 mb-1">
+                      Accent Badge Text
+                    </label>
+                    <input
+                      type="text"
+                      required
+                      placeholder="TRUSTED BY"
+                      value={transitionBanner.badge}
+                      onChange={(e) => setTransitionBanner({ ...transitionBanner, badge: e.target.value })}
+                      className="w-full px-3.5 py-2.5 border border-slate-300 rounded-xl text-sm focus:outline-none focus:border-blue-600"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-bold uppercase tracking-wider text-slate-700 mb-1">
+                      Main Headline
+                    </label>
+                    <input
+                      type="text"
+                      required
+                      placeholder="35L + PEOPLE"
+                      value={transitionBanner.headline}
+                      onChange={(e) => setTransitionBanner({ ...transitionBanner, headline: e.target.value })}
+                      className="w-full px-3.5 py-2.5 border border-slate-300 rounded-xl text-sm focus:outline-none focus:border-blue-600 font-bold"
+                    />
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block text-xs font-bold uppercase tracking-wider text-slate-700 mb-1">
+                    Description / Subtitle
+                  </label>
+                  <input
+                    type="text"
+                    placeholder="Salons & stylists across India trust Aura..."
+                    value={transitionBanner.subtitle || ""}
+                    onChange={(e) => setTransitionBanner({ ...transitionBanner, subtitle: e.target.value })}
+                    className="w-full px-3.5 py-2.5 border border-slate-300 rounded-xl text-sm focus:outline-none focus:border-blue-600"
+                  />
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-xs font-bold uppercase tracking-wider text-slate-700 mb-1">
+                      Media Type
+                    </label>
+                    <select
+                      value={transitionBanner.mediaType}
+                      onChange={(e) =>
+                        setTransitionBanner({ ...transitionBanner, mediaType: e.target.value as "image" | "video" })
+                      }
+                      className="w-full px-3.5 py-2.5 border border-slate-300 rounded-xl text-sm focus:outline-none focus:border-blue-600 bg-white"
+                    >
+                      <option value="image">Image (Background Filmstrip / Mosaic)</option>
+                      <option value="video">Video (MP4 / Direct Stream)</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label className="block text-xs font-bold uppercase tracking-wider text-slate-700 mb-1">
+                      Media URL (or use uploader below)
+                    </label>
+                    <input
+                      type="text"
+                      placeholder="https://... or /images/mosaic_filmstrip.jpg"
+                      value={transitionBanner.mediaUrl}
+                      onChange={(e) => setTransitionBanner({ ...transitionBanner, mediaUrl: e.target.value })}
+                      className="w-full px-3.5 py-2.5 border border-slate-300 rounded-xl text-sm focus:outline-none focus:border-blue-600 font-mono text-xs"
+                    />
+                  </div>
+                </div>
+
+                {/* Device Upload Field */}
+                <div>
+                  <ImageUploadField
+                    label="Or Upload Media File from Device (Auto-optimized)"
+                    value={transitionBanner.mediaUrl}
+                    onChange={(url) => setTransitionBanner({ ...transitionBanner, mediaUrl: url })}
+                    aspectHint="Filmstrip / Banner ~16:9 ratio"
+                  />
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2">
+                  <div>
+                    <label className="block text-xs font-bold uppercase tracking-wider text-slate-700 mb-1">
+                      Button Text
+                    </label>
+                    <input
+                      type="text"
+                      placeholder="SHOP WITH AI"
+                      value={transitionBanner.ctaText || ""}
+                      onChange={(e) => setTransitionBanner({ ...transitionBanner, ctaText: e.target.value })}
+                      className="w-full px-3.5 py-2.5 border border-slate-300 rounded-xl text-sm focus:outline-none focus:border-blue-600 font-bold"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-bold uppercase tracking-wider text-slate-700 mb-1">
+                      Button Link
+                    </label>
+                    <input
+                      type="text"
+                      placeholder="/category/hair-styling-hold"
+                      value={transitionBanner.ctaLink || ""}
+                      onChange={(e) => setTransitionBanner({ ...transitionBanner, ctaLink: e.target.value })}
+                      className="w-full px-3.5 py-2.5 border border-slate-300 rounded-xl text-sm focus:outline-none focus:border-blue-600 font-mono text-xs"
+                    />
+                  </div>
+                </div>
+
+                <div className="pt-3">
+                  <button
+                    type="submit"
+                    disabled={isSavingBanner}
+                    className="w-full sm:w-auto px-7 py-3 bg-[#142B70] text-white rounded-xl text-sm font-bold hover:bg-[#1E3A8A] transition-all flex items-center justify-center gap-2 shadow-md shadow-blue-900/10"
+                  >
+                    <Save className="w-4 h-4" />
+                    <span>{isSavingBanner ? "Saving Changes..." : "Save Transition Banner"}</span>
+                  </button>
+                </div>
+              </form>
+
+              {/* Live Preview Card */}
+              <div className="lg:col-span-5 space-y-3">
+                <span className="text-xs font-black text-slate-500 uppercase tracking-wider block">
+                  Live Visual Preview
+                </span>
+                <div className="relative rounded-3xl overflow-hidden shadow-xl border border-slate-800 bg-slate-950 aspect-[16/10] flex items-center justify-center p-6 text-center">
+                  {/* Background Media */}
+                  {transitionBanner.mediaType === "video" || transitionBanner.mediaUrl?.endsWith(".mp4") ? (
+                    <video
+                      src={transitionBanner.mediaUrl}
+                      autoPlay
+                      loop
+                      muted
+                      playsInline
+                      className="absolute inset-0 w-full h-full object-cover"
+                    />
+                  ) : (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img
+                      src={transitionBanner.mediaUrl || "/images/mosaic_filmstrip.jpg"}
+                      alt="Banner Preview"
+                      className="absolute inset-0 w-full h-full object-cover opacity-70"
+                    />
+                  )}
+                  <div className="absolute inset-0 bg-black/55 backdrop-blur-[0.5px]" />
+
+                  {/* Foreground Content */}
+                  <div className="relative z-10 flex flex-col items-center gap-3">
+                    <div className="flex items-center gap-3.5 bg-black/70 backdrop-blur-md px-5 py-4 rounded-xl border border-white/20 shadow-2xl text-left">
+                      <div className="w-2.5 h-12 bg-[#34d399] rounded-full shrink-0 shadow-sm" />
+                      <div>
+                        <div className="text-xs font-extrabold uppercase tracking-widest text-[#34d399]">
+                          {transitionBanner.badge || "TRUSTED BY"}
+                        </div>
+                        <div className="text-2xl font-black text-white font-serif tracking-tight">
+                          {transitionBanner.headline || "35L + PEOPLE"}
+                        </div>
+                      </div>
+                    </div>
+
+                    {transitionBanner.ctaText && (
+                      <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-[#1e3a8a]/90 text-white text-xs font-bold uppercase tracking-wider border border-white/20 shadow-lg">
+                        <Sparkles className="w-3.5 h-3.5 text-emerald-300" />
+                        <span>{transitionBanner.ctaText}</span>
+                      </div>
+                    )}
+                  </div>
+                </div>
+                <p className="text-[11px] text-slate-400 text-center">
+                  Preview mirrors the exact layout seen by customers on the homepage.
+                </p>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* TAB: CUSTOMIZED KITS */}
+        {activeTab === "kits" && (
+          <div className="space-y-6 animate-in fade-in duration-300">
+            <div className="flex items-center justify-between">
+              <div>
+                <h3 className="text-lg font-bold text-slate-900">CUSTOMIZED KITS — Discipline Bundles ({kits.length})</h3>
+                <p className="text-xs text-slate-500">
+                  Manage the curated styling kits shown on the homepage with customized products and pricing.
+                </p>
+              </div>
+              <button
+                onClick={handleOpenAddKit}
+                className="px-4 py-2 bg-[#142B70] text-white rounded-xl text-xs sm:text-sm font-bold hover:bg-[#1E3A8A] transition-colors flex items-center gap-2 shadow-sm"
+              >
+                <Plus className="w-4 h-4" /> Add New Kit
+              </button>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+              {kits.map((kit) => (
+                <div
+                  key={kit.id}
+                  className="bg-white rounded-2xl border border-slate-200/90 shadow-sm overflow-hidden flex flex-col justify-between hover:shadow-md transition-shadow"
+                >
+                  <div>
+                    <div className="relative aspect-[4/3] bg-gradient-to-b from-sky-50 to-white p-3">
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      <img src={kit.image} alt={kit.name} className="w-full h-full object-contain" />
+                      <span className="absolute top-2.5 right-2.5 bg-[#142B70] text-white text-[9px] font-black px-2 py-0.5 rounded-full uppercase tracking-wider">
+                        {kit.badge}
+                      </span>
+                    </div>
+
+                    <div className="p-4 space-y-1.5">
+                      <div className="flex items-center justify-between">
+                        <h4 className="text-sm font-black text-slate-900 line-clamp-1">{kit.name}</h4>
+                        <span className="text-[11px] font-bold text-blue-600">{kit.itemCount || (kit.items ? kit.items.length : 3)} Products</span>
+                      </div>
+                      <p className="text-xs text-slate-500 line-clamp-2 leading-relaxed">{kit.subtitle}</p>
+                      <div className="flex items-baseline gap-2 pt-1">
+                        <span className="text-base font-black text-slate-900">₹{kit.price}</span>
+                        <span className="text-xs text-slate-400 line-through">₹{kit.originalPrice}</span>
+                      </div>
+
+                      {kit.items && kit.items.length > 0 && (
+                        <div className="pt-2 flex flex-wrap gap-1">
+                          {kit.items.slice(0, 3).map((it, idx) => (
+                            <span key={idx} className="text-[10px] bg-slate-100 text-slate-600 px-2 py-0.5 rounded-md truncate max-w-[120px]">
+                              {it}
+                            </span>
+                          ))}
+                          {kit.items.length > 3 && (
+                            <span className="text-[10px] bg-slate-100 text-slate-500 px-1.5 py-0.5 rounded-md">
+                              +{kit.items.length - 3}
+                            </span>
+                          )}
+                        </div>
+                      )}
+                    </div>
+                  </div>
+
+                  <div className="p-3 bg-slate-50 border-t border-slate-100 flex items-center justify-between">
+                    <span className="text-[10px] font-mono text-slate-400">ID: {kit.id}</span>
+                    <div className="flex items-center gap-2">
+                      <button
+                        onClick={() => handleOpenEditKit(kit)}
+                        className="text-blue-600 hover:text-blue-800 font-bold text-xs flex items-center gap-1"
+                        title="Edit kit"
+                      >
+                        <Edit className="w-3.5 h-3.5" /> Edit
+                      </button>
+                      <button
+                        onClick={() => handleDeleteKit(kit.id)}
+                        className="text-red-600 hover:text-red-800 font-bold text-xs flex items-center gap-1"
+                        title="Delete kit"
+                      >
+                        <Trash2 className="w-3.5 h-3.5" /> Delete
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* TAB: SHOP BY HAIR GOALS */}
+        {activeTab === "hairGoals" && (
+          <div className="space-y-6 animate-in fade-in duration-300">
+            <div className="flex items-center justify-between">
+              <div>
+                <h3 className="text-lg font-bold text-slate-900">SHOP BY HAIR GOALS ({hairGoals.length})</h3>
+                <p className="text-xs text-slate-500">
+                  Targeted routine goals featured on the homepage marquee rail and routine recommender.
+                </p>
+              </div>
+              <button
+                onClick={handleOpenAddGoal}
+                className="px-4 py-2 bg-[#142B70] text-white rounded-xl text-xs sm:text-sm font-bold hover:bg-[#1E3A8A] transition-colors flex items-center gap-2 shadow-sm"
+              >
+                <Plus className="w-4 h-4" /> Add Hair Goal
+              </button>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+              {hairGoals.map((goal) => (
+                <div
+                  key={goal.id}
+                  className="bg-white rounded-2xl border border-slate-200/90 shadow-sm overflow-hidden flex flex-col justify-between hover:shadow-md transition-shadow"
+                >
+                  <div>
+                    <div className="relative aspect-[16/9] bg-slate-100 overflow-hidden">
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      <img src={goal.image} alt={goal.name} className="w-full h-full object-cover" />
+                      <div className="absolute top-2.5 right-2.5 bg-[#142B70] text-white text-[9px] font-black px-2.5 py-0.5 rounded-full uppercase tracking-wider shadow">
+                        {goal.badge}
+                      </div>
+                      <div className="absolute bottom-2 left-2 bg-black/60 backdrop-blur-xs text-emerald-300 text-[10px] font-mono px-2 py-0.5 rounded-md">
+                        Filter: {goal.filterKey}
+                      </div>
+                    </div>
+
+                    <div className="p-4 space-y-1">
+                      <h4 className="text-sm font-black text-slate-900 uppercase tracking-tight">{goal.name}</h4>
+                      <p className="text-xs text-slate-500 leading-relaxed">{goal.tagline}</p>
+                    </div>
+                  </div>
+
+                  <div className="p-3 bg-slate-50 border-t border-slate-100 flex items-center justify-between">
+                    <span className="text-[10px] font-mono text-slate-400">ID: {goal.id}</span>
+                    <div className="flex items-center gap-2">
+                      <button
+                        onClick={() => handleOpenEditGoal(goal)}
+                        className="text-blue-600 hover:text-blue-800 font-bold text-xs flex items-center gap-1"
+                        title="Edit goal"
+                      >
+                        <Edit className="w-3.5 h-3.5" /> Edit
+                      </button>
+                      <button
+                        onClick={() => handleDeleteGoal(goal.id)}
+                        className="text-red-600 hover:text-red-800 font-bold text-xs flex items-center gap-1"
+                        title="Delete goal"
+                      >
+                        <Trash2 className="w-3.5 h-3.5" /> Delete
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
       </div>
 
       {/* MODAL: ADD / EDIT OUR PROCESS STEP */}
@@ -3440,6 +4069,243 @@ export default function AdminDashboardPage() {
                   className="px-5 py-2 bg-[#142B70] text-white rounded-xl text-xs font-bold hover:bg-[#1E3A8A]"
                 >
                   {editingCoupon ? "Update Coupon" : "Create Coupon"}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* MODAL: ADD / EDIT CUSTOMIZED KIT */}
+      {isAddKitOpen && (
+        <div className="fixed inset-0 z-50 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4 overflow-y-auto">
+          <div className="bg-white rounded-2xl max-w-lg w-full p-6 sm:p-7 space-y-4 shadow-2xl animate-in zoom-in-95 my-8">
+            <div className="flex items-center justify-between border-b pb-3">
+              <h3 className="text-base font-black text-slate-900">
+                {editingKit ? "Edit Customized Kit" : "Add Customized Kit"}
+              </h3>
+              <button
+                onClick={() => {
+                  setIsAddKitOpen(false);
+                  setEditingKit(null);
+                }}
+                className="text-slate-400 hover:text-slate-600"
+              >
+                ✕
+              </button>
+            </div>
+
+            <form onSubmit={handleSaveKit} className="space-y-3.5">
+              <div>
+                <label className="block text-xs font-bold text-slate-700 mb-1">Kit Title / Name</label>
+                <input
+                  type="text"
+                  required
+                  placeholder="Aura Starter Kit"
+                  value={newKit.name}
+                  onChange={(e) => setNewKit({ ...newKit, name: e.target.value })}
+                  className="w-full px-3.5 py-2 border rounded-xl text-xs sm:text-sm outline-none"
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-bold text-slate-700 mb-1">Subtitle / Summary</label>
+                <input
+                  type="text"
+                  required
+                  placeholder="Detangling brush + styling mousse + weightless hold spray"
+                  value={newKit.subtitle}
+                  onChange={(e) => setNewKit({ ...newKit, subtitle: e.target.value })}
+                  className="w-full px-3.5 py-2 border rounded-xl text-xs sm:text-sm outline-none"
+                />
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-xs font-bold text-slate-700 mb-1">Number of Items</label>
+                  <input
+                    type="number"
+                    required
+                    value={newKit.itemCount}
+                    onChange={(e) => setNewKit({ ...newKit, itemCount: e.target.value })}
+                    className="w-full px-3.5 py-2 border rounded-xl text-xs sm:text-sm outline-none"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-bold text-slate-700 mb-1">Badge</label>
+                  <input
+                    type="text"
+                    required
+                    placeholder="MOST POPULAR"
+                    value={newKit.badge}
+                    onChange={(e) => setNewKit({ ...newKit, badge: e.target.value })}
+                    className="w-full px-3.5 py-2 border rounded-xl text-xs sm:text-sm outline-none"
+                  />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-xs font-bold text-slate-700 mb-1">Sale Price (₹)</label>
+                  <input
+                    type="number"
+                    required
+                    value={newKit.price}
+                    onChange={(e) => setNewKit({ ...newKit, price: e.target.value })}
+                    className="w-full px-3.5 py-2 border rounded-xl text-xs sm:text-sm outline-none font-bold"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-bold text-slate-700 mb-1">Original Price (₹)</label>
+                  <input
+                    type="number"
+                    required
+                    value={newKit.originalPrice}
+                    onChange={(e) => setNewKit({ ...newKit, originalPrice: e.target.value })}
+                    className="w-full px-3.5 py-2 border rounded-xl text-xs sm:text-sm outline-none"
+                  />
+                </div>
+              </div>
+
+              <div>
+                <ImageUploadField
+                  label="Kit Cover Image"
+                  value={newKit.image}
+                  onChange={(url) => setNewKit({ ...newKit, image: url })}
+                  aspectHint="Square or 4:3 ratio"
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-bold text-slate-700 mb-1">
+                  Products in Kit (Comma separated)
+                </label>
+                <textarea
+                  rows={2}
+                  placeholder="Detangling Pro Brush, Hydra Mousse 180ml, Silk Hold Mist"
+                  value={newKit.items}
+                  onChange={(e) => setNewKit({ ...newKit, items: e.target.value })}
+                  className="w-full px-3.5 py-2 border rounded-xl text-xs sm:text-sm outline-none"
+                />
+              </div>
+
+              <div className="pt-2 flex justify-end gap-3">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setIsAddKitOpen(false);
+                    setEditingKit(null);
+                  }}
+                  className="px-4 py-2 border rounded-xl text-xs font-semibold text-slate-600 hover:bg-slate-50"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  className="px-5 py-2 bg-[#142B70] text-white rounded-xl text-xs font-bold hover:bg-[#1E3A8A]"
+                >
+                  {editingKit ? "Update Kit" : "Save Kit"}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* MODAL: ADD / EDIT HAIR GOAL */}
+      {isAddGoalOpen && (
+        <div className="fixed inset-0 z-50 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4 overflow-y-auto">
+          <div className="bg-white rounded-2xl max-w-lg w-full p-6 sm:p-7 space-y-4 shadow-2xl animate-in zoom-in-95 my-8">
+            <div className="flex items-center justify-between border-b pb-3">
+              <h3 className="text-base font-black text-slate-900">
+                {editingGoal ? "Edit Hair Goal" : "Add Hair Goal"}
+              </h3>
+              <button
+                onClick={() => {
+                  setIsAddGoalOpen(false);
+                  setEditingGoal(null);
+                }}
+                className="text-slate-400 hover:text-slate-600"
+              >
+                ✕
+              </button>
+            </div>
+
+            <form onSubmit={handleSaveGoal} className="space-y-3.5">
+              <div>
+                <label className="block text-xs font-bold text-slate-700 mb-1">Goal Name / Title</label>
+                <input
+                  type="text"
+                  required
+                  placeholder="ROOT LIFT & VOLUME"
+                  value={newGoal.name}
+                  onChange={(e) => setNewGoal({ ...newGoal, name: e.target.value, title: e.target.value })}
+                  className="w-full px-3.5 py-2 border rounded-xl text-xs sm:text-sm outline-none uppercase font-bold"
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-bold text-slate-700 mb-1">Tagline / Description</label>
+                <input
+                  type="text"
+                  required
+                  placeholder="Instant density and matte texture at the crown"
+                  value={newGoal.tagline}
+                  onChange={(e) => setNewGoal({ ...newGoal, tagline: e.target.value })}
+                  className="w-full px-3.5 py-2 border rounded-xl text-xs sm:text-sm outline-none"
+                />
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-xs font-bold text-slate-700 mb-1">Badge Tag</label>
+                  <input
+                    type="text"
+                    required
+                    placeholder="VOLUME"
+                    value={newGoal.badge}
+                    onChange={(e) => setNewGoal({ ...newGoal, badge: e.target.value })}
+                    className="w-full px-3.5 py-2 border rounded-xl text-xs sm:text-sm outline-none uppercase"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-bold text-slate-700 mb-1">Filter Key</label>
+                  <input
+                    type="text"
+                    required
+                    placeholder="volume (matches product hairGoals)"
+                    value={newGoal.filterKey}
+                    onChange={(e) => setNewGoal({ ...newGoal, filterKey: e.target.value })}
+                    className="w-full px-3.5 py-2 border rounded-xl text-xs sm:text-sm outline-none font-mono"
+                  />
+                </div>
+              </div>
+
+              <div>
+                <ImageUploadField
+                  label="Goal Showcase Image"
+                  value={newGoal.image}
+                  onChange={(url) => setNewGoal({ ...newGoal, image: url })}
+                  aspectHint="16:9 or 4:3 landscape ratio"
+                />
+              </div>
+
+              <div className="pt-2 flex justify-end gap-3">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setIsAddGoalOpen(false);
+                    setEditingGoal(null);
+                  }}
+                  className="px-4 py-2 border rounded-xl text-xs font-semibold text-slate-600 hover:bg-slate-50"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  className="px-5 py-2 bg-[#142B70] text-white rounded-xl text-xs font-bold hover:bg-[#1E3A8A]"
+                >
+                  {editingGoal ? "Update Goal" : "Save Goal"}
                 </button>
               </div>
             </form>
