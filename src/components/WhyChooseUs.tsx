@@ -43,60 +43,35 @@ export default function WhyChooseUs() {
         </div>
       </div>
 
-      {/* Full-width continuous smooth marquee rail */}
+      {/* Full-width continuous smooth marquee rail — never pauses, 4 loops for infinite unbroken scroll */}
       <div className="overflow-hidden w-full relative py-2">
-        <div className="animate-marquee-cards flex items-stretch gap-4 sm:gap-6 whitespace-nowrap px-4">
-          {/* First loop */}
-          {features.map((feat, idx) => (
-            <div
-              key={`why-1-${idx}`}
-              className="group relative flex-none w-[240px] sm:w-[280px] bg-[#EAF3FF]/30 hover:bg-white rounded-3xl p-6 sm:p-7 border border-[#E5E7EB] hover:border-[#2445A8]/30 shadow-xs hover:shadow-xl transition-all duration-300 flex flex-col justify-between whitespace-normal select-none hover:-translate-y-1"
-            >
-              <div>
-                <div className="w-12 h-12 rounded-2xl bg-white border border-[#E5E7EB] flex items-center justify-center text-[#142B70] shadow-xs mb-5 group-hover:scale-110 transition-transform">
-                  <span className="text-xl font-serif">✦</span>
+        <div className="animate-marquee-slow flex items-stretch gap-4 sm:gap-6 whitespace-nowrap px-4">
+          {[0, 1, 2, 3].flatMap((loop) =>
+            features.map((feat, idx) => (
+              <div
+                key={`why-${loop}-${idx}`}
+                className="group relative flex-none w-[240px] sm:w-[280px] bg-[#EAF3FF]/30 hover:bg-white rounded-3xl p-6 sm:p-7 border border-[#E5E7EB] hover:border-[#2445A8]/30 shadow-xs hover:shadow-xl transition-all duration-300 flex flex-col justify-between whitespace-normal select-none hover:-translate-y-1"
+              >
+                <div>
+                  <div className="w-12 h-12 rounded-2xl bg-white border border-[#E5E7EB] flex items-center justify-center text-[#142B70] shadow-xs mb-5 group-hover:scale-110 transition-transform">
+                    <span className="text-xl font-serif">✦</span>
+                  </div>
+
+                  <h3 className="text-sm sm:text-base font-black text-[#111111] uppercase tracking-tight mb-2">
+                    {feat.heading}
+                  </h3>
+
+                  <p className="text-xs sm:text-[13px] text-[#666666] font-normal leading-relaxed">
+                    {feat.description}
+                  </p>
                 </div>
 
-                <h3 className="text-sm sm:text-base font-black text-[#111111] uppercase tracking-tight mb-2">
-                  {feat.heading}
-                </h3>
-
-                <p className="text-xs sm:text-[13px] text-[#666666] font-normal leading-relaxed">
-                  {feat.description}
-                </p>
-              </div>
-
-              <div className="pt-4 mt-4 border-t border-gray-100 flex items-center gap-1.5 text-[10px] font-bold text-[#2445A8] uppercase tracking-wider">
-                <span>Certified Standard</span>
-              </div>
-            </div>
-          ))}
-
-          {/* Duplicated loop for infinite unbroken movement */}
-          {features.map((feat, idx) => (
-            <div
-              key={`why-2-${idx}`}
-              className="group relative flex-none w-[240px] sm:w-[280px] bg-[#EAF3FF]/30 hover:bg-white rounded-3xl p-6 sm:p-7 border border-[#E5E7EB] hover:border-[#2445A8]/30 shadow-xs hover:shadow-xl transition-all duration-300 flex flex-col justify-between whitespace-normal select-none hover:-translate-y-1"
-            >
-              <div>
-                <div className="w-12 h-12 rounded-2xl bg-white border border-[#E5E7EB] flex items-center justify-center text-[#142B70] shadow-xs mb-5 group-hover:scale-110 transition-transform">
-                  <span className="text-xl font-serif">✦</span>
+                <div className="pt-4 mt-4 border-t border-gray-100 flex items-center gap-1.5 text-[10px] font-bold text-[#2445A8] uppercase tracking-wider">
+                  <span>Certified Standard</span>
                 </div>
-
-                <h3 className="text-sm sm:text-base font-black text-[#111111] uppercase tracking-tight mb-2">
-                  {feat.heading}
-                </h3>
-
-                <p className="text-xs sm:text-[13px] text-[#666666] font-normal leading-relaxed">
-                  {feat.description}
-                </p>
               </div>
-
-              <div className="pt-4 mt-4 border-t border-gray-100 flex items-center gap-1.5 text-[10px] font-bold text-[#2445A8] uppercase tracking-wider">
-                <span>Certified Standard</span>
-              </div>
-            </div>
-          ))}
+            ))
+          )}
         </div>
       </div>
 

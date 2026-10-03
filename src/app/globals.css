@@ -73,32 +73,40 @@ body {
 .animate-marquee {
   display: flex;
   width: max-content;
-  animation: marquee 28s linear infinite;
+  animation: marquee 30s linear infinite;
+  will-change: transform;
 }
 
 .animate-marquee:hover {
   animation-play-state: paused;
 }
 
+/* Cards marquee — hover pauses (good for click-to-select cards) */
 .animate-marquee-cards {
   display: flex;
   width: max-content;
-  animation: marquee 28s linear infinite;
+  animation: marquee 40s linear infinite;
+  will-change: transform;
 }
 
-.animate-marquee-cards:hover,
-.animate-marquee-cards:active {
-  animation-play-state: paused;
+/* Prevent iframes inside marquee from capturing mouse and pausing animation */
+.animate-marquee-cards iframe,
+.animate-marquee iframe,
+.animate-marquee-slow iframe {
+  pointer-events: none;
 }
 
+/* Slow auto-scroll — never pauses on hover (for WhyChooseUs / trust-strip) */
 .animate-marquee-slow {
   display: flex;
   width: max-content;
-  animation: marquee 28s linear infinite;
+  animation: marquee 35s linear infinite;
+  will-change: transform;
 }
 
-.animate-marquee-slow:hover,
-.animate-marquee-slow:active {
+/* Keep hover pause ONLY for card marquees (not slow strip) */
+.animate-marquee-cards:hover,
+.animate-marquee-cards:active {
   animation-play-state: paused;
 }
 
